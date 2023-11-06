@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/drawable-v24/ic_edit_white_24dp.xml" value="0.117" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/drawable-v24/shape_image_view_border.xml" value="0.117" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/drawable/ic_baseline_local_gas_station_24.xml" value="0.117" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/drawable/ic_launcher_background.xml" value="0.117" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.117" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/activity_add_vehicle.xml" value="0.3269927536231884" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/activity_edit_vehicle.xml" value="0.3269927536231884" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/activity_main.xml" value="0.31875" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/activity_vehicle_logs.xml" value="0.3269927536231884" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/decision_dialog.xml" value="0.28351449275362317" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/delete_confirmation_dialog.xml" value="0.28351449275362317" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/insert_new_log_dialog.xml" value="0.28351449275362317" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/layout/vehicle_rv_item.xml" value="0.536" />
+        <entry key="..\:/Users/tiago/Desktop/gasLogger/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

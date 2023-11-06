@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.EditVehicle"
+    android:padding="10dp">
+
+    <ImageView
+        android:id="@+id/iv_vehicle_image_edit"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:background="@drawable/shape_image_view_border"
+        android:scaleType="fitCenter"
+        android:src="@drawable/add_screen_image_placeholder"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/til_add_make_edit" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_add_make_edit"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@id/iv_vehicle_image_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/til_add_model_edit">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/et_make_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"
+            android:hint="Make, eg. Audi, BMW,..."
+            android:imeOptions="actionGo"
+            android:inputType="textCapSentences"
+            android:textColor="#363A43"
+            android:textColorHint="#7A8089" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_add_model_edit"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@id/til_add_make_edit"
+        app:layout_constraintBottom_toTopOf="@id/til_add_km_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/et_model_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"
+            android:hint="Model, eg. B6, E46,..."
+            android:imeOptions="actionGo"
+            android:inputType="textCapSentences"
+            android:textColor="#363A43"
+            android:textColorHint="#7A8089" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_add_km_edit"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@id/til_add_model_edit"
+        app:layout_constraintBottom_toTopOf="@id/til_add_license_plate_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/et_km_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"
+            android:hint="Km, eg. 147562..."
+            android:imeOptions="actionGo"
+            android:inputType="number"
+            android:textColor="#363A43"
+            android:textColorHint="#7A8089" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_add_license_plate_edit"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@id/til_add_km_edit"
+        app:layout_constraintBottom_toTopOf="@id/dropdown_fuel_type_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/et_license_plate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"
+            android:hint="License Plate, eg. 14-75-OP"
+            android:imeOptions="actionGo"
+            android:inputType="textCapSentences"
+            android:textColor="#363A43"
+            android:textColorHint="#7A8089" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Spinner
+        android:id="@+id/dropdown_fuel_type_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        app:layout_constraintTop_toBottomOf="@id/til_add_license_plate_edit"
+        app:layout_constraintBottom_toTopOf="@id/btn_update_vehicle_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/btn_update_vehicle_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save Edited Vehicle"
+        app:layout_constraintTop_toBottomOf="@id/dropdown_fuel_type_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
