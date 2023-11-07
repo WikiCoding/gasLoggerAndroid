@@ -47,9 +47,8 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     private var fuelTypeEdited: String? = null
     private var editedVehicle: VehicleEntity? = null
     private var pictureIsChanged: Boolean = false
-    var vehicleImage: Uri? = null
+    private var vehicleImageUri: Uri? = null
 
-    @RequiresApi(33)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditVehicleBinding.inflate(layoutInflater)
@@ -58,33 +57,45 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.title = "Edit Vehicle"
 
-        if (intent.hasExtra(Constants.UPDATE_VEHICLE_INTENT_EXTRA)) {
-            currentVehicle = intent
-                .getSerializableExtra(Constants.UPDATE_VEHICLE_INTENT_EXTRA) as VehicleEntity
-        }
+        getIntentExtra()
 
         preFillFormFields()
 
-        binding!!.ivVehicleImageEdit.setOnClickListener {
-            pictureIsChanged = true
-            pictureDialog()
-        }
+        handleImageClick()
 
+        handleSaveUpdatesBtnClick()
+    }
+
+    private fun handleSaveUpdatesBtnClick() {
         binding!!.btnUpdateVehicleEdit.setOnClickListener {
             editedVehicle = setupUpdatedForm()
 
             lifecycleScope.launch {
                 dao.updateVehicle(editedVehicle!!)
             }
-            startActivity(Intent(this, MainActivity::class.java))
+
             finish()
+        }
+    }
+
+    private fun handleImageClick() {
+        binding!!.ivVehicleImageEdit.setOnClickListener {
+            pictureIsChanged = true
+            pictureDialog()
+        }
+    }
+
+    private fun getIntentExtra() {
+        if (intent.hasExtra(Constants.UPDATE_VEHICLE_INTENT_EXTRA)) {
+            currentVehicle = intent
+                .getSerializableExtra(Constants.UPDATE_VEHICLE_INTENT_EXTRA) as VehicleEntity
+            // new way is intent.getSerializableExtra(String, Class) but doesn't work!
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                startActivity(Intent(this, MainActivity::class.java))
                 finish()
                 return true
             }
@@ -115,7 +126,7 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         return true
     }
 
-    private fun setupUpdatedForm() : VehicleEntity? {
+    private fun setupUpdatedForm(): VehicleEntity? {
         val makeEdit = binding!!.etMakeEdit.text.toString()
         val modelEdit = binding!!.etModelEdit.text.toString()
         val licensePlateEdit = binding!!.etLicensePlate.text.toString()
@@ -125,10 +136,12 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         val kmEdit = Integer.parseInt(binding!!.etKmEdit.text.toString())
 
         val imageEdit: String = if (!pictureIsChanged) currentVehicle!!.image
-        else vehicleImage.toString()
+        else vehicleImageUri.toString()
 
-        return VehicleEntity(currentVehicle!!.idVehicle, makeEdit, modelEdit, licensePlateEdit, kmEdit,
-            fuelTypeEdited!!, imageEdit)
+        return VehicleEntity(
+            currentVehicle!!.idVehicle, makeEdit, modelEdit, licensePlateEdit, kmEdit,
+            fuelTypeEdited!!, imageEdit
+        )
     }
 
     private fun preFillFormFields() {
@@ -141,7 +154,8 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun setupFuelTypeDropdownMenu() {
-        /** adding dropdown elements see https://developer.android.com/develop/ui/views/components/spinner?hl=pt-br **/
+        /** adding dropdown elements see:
+         * https://developer.android.com/develop/ui/views/components/spinner?hl=pt-br **/
         val dropdown: Spinner = binding!!.dropdownFuelTypeEdit
         dropdown.onItemSelectedListener = this
         val dropdownLoadedItemPosition = setupCorrectFuelTypeOnDropdown()
@@ -159,8 +173,10 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun setupCorrectFuelTypeOnDropdown(): Int {
-        val adapter = ArrayAdapter.createFromResource(this, R.array.fuel_type_array,
-            android.R.layout.simple_spinner_dropdown_item)
+        val adapter = ArrayAdapter.createFromResource(
+            this, R.array.fuel_type_array,
+            android.R.layout.simple_spinner_dropdown_item
+        )
 
         val itemList = ArrayList<String>()
 
@@ -193,7 +209,7 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
             "Select photo from Gallery",
             "Capture photo from camera"
         )
-        pictureDialog.setItems(pictureDialogItems) { dialog, which ->
+        pictureDialog.setItems(pictureDialogItems) { _, which ->
             when (which) {
                 0 -> choosePhotoFromGallery()
                 1 -> takePhotoFromCamera()
@@ -210,8 +226,9 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         ) {
             /** using this intent to start our camera**/
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            //startActivityForResult(intent, CAMERA_REQUEST_CODE)
+
             activityCameraLauncher.launch(intent)
+            binding!!.ivVehicleImageEdit.setImageBitmap(convertUriToBitmap(vehicleImageUri!!, this))
         } else {
             ActivityCompat.requestPermissions(
                 this, arrayOf(Manifest.permission.CAMERA),
@@ -227,27 +244,29 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     }
 
     // Declare a contract to get a result from another activity.
-    val activityCameraLauncher =
+    private val activityCameraLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultFromActivity = result.data?.extras?.get("data") as Bitmap
 
-                // will not only save in the internal storage but also update the Uri variable to save the path in the database
-                vehicleImage = saveImageToInternalStorage(resultFromActivity)
+                // will not only save in the internal storage but
+                // also update the Uri variable to save the path in the database
+                vehicleImageUri = saveImageToInternalStorage(resultFromActivity)
 
                 binding!!.ivVehicleImageEdit.setImageBitmap(resultFromActivity)
             }
         }
 
-    val activityGalleryLauncher =
+    private val activityGalleryLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultFromActivity = result.data?.data as Uri
 
                 val imageBitmap = convertUriToBitmap(resultFromActivity, this)
                 if (imageBitmap != null) {
-                    // will not only save in the internal storage but also update the Uri variable to save the path in the database
-                    vehicleImage = saveImageToInternalStorage(imageBitmap)
+                    // will not only save in the internal storage but
+                    // also update the Uri variable to save the path in the database
+                    vehicleImageUri = saveImageToInternalStorage(imageBitmap)
                     binding!!.ivVehicleImageEdit.setImageBitmap(imageBitmap)
                 } else {
                     Toast.makeText(this, "Error getting image from gallery", Toast.LENGTH_SHORT)
@@ -255,24 +274,6 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
                 }
             }
         }
-
-    private fun saveImageToInternalStorage(bitmap: Bitmap): Uri {
-        val wrapper = ContextWrapper(applicationContext)
-
-        /** MODE_PRIVATE means that other applications will not be able to access this directory**/
-        var file = wrapper.getDir(IMAGE_DIRECTORY, Context.MODE_PRIVATE)
-        file = File(file, "${UUID.randomUUID()}.jpg")
-
-        try {
-            val stream: OutputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-            stream.flush()
-            stream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return Uri.parse(file.absolutePath)
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -285,22 +286,23 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
                 val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                 activityCameraLauncher.launch(intent)
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                showRationalDialogForPermissions()
             }
         }
         if (requestCode == READ_EXTERNAL_STORAGE_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                val galleryIntent = Intent(Intent.ACTION_PICK,
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                val galleryIntent = Intent(
+                    Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                )
                 activityGalleryLauncher.launch(galleryIntent)
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                showRationalDialogForPermissions()
             }
         }
     }
 
     companion object {
-        private const val IMAGE_DIRECTORY = "GasLogImages"
         private const val CAMERA_PERMISSION_CODE = 1
         private const val READ_EXTERNAL_STORAGE_CODE = 2
     }

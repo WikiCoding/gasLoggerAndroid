@@ -56,6 +56,10 @@ class VehicleLogs : BaseActivity() {
 //            }
             insertLogDialog(currentVehicle!!)
         }
+
+        // TODO: create recyclerview adapter
+        // TODO: move the button to add log to the toolbar
+        // TODO: add menu to the toolbar with excel export option
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -98,15 +102,11 @@ class VehicleLogs : BaseActivity() {
         getDates(dialogBinding)
         insertDialog.show()
 
-        dialogBinding.tvDateCalendar.setOnClickListener {
-            DatePickerDialog(
-                this@VehicleLogs, dateSetListener,
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
-        }
+        listenToDateTextInputClick(dialogBinding)
 
         dialogBinding.tvProceed.setOnClickListener {
+            val newLog = setLogFormFields(dialogBinding)
+            insertNewLog(newLog)
             insertDialog.dismiss()
         }
 
@@ -127,11 +127,33 @@ class VehicleLogs : BaseActivity() {
         updateDateInView(dialogBinding)
     }
 
-    private fun setLogFormFields(dialogBinding: InsertNewLogDialogBinding) {
+    private fun listenToDateTextInputClick(dialogBinding: InsertNewLogDialogBinding) {
+        dialogBinding.tvDateCalendar.setOnClickListener {
+            DatePickerDialog(
+                this@VehicleLogs, dateSetListener,
+                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+
+    private fun setLogFormFields(dialogBinding: InsertNewLogDialogBinding): LogEntity {
         actualKm = dialogBinding.etKm.text.toString().toInt()
         fuelLiters = dialogBinding.etFuelLiters.text.toString().toDoubleOrNull()
         pricePerLiter = dialogBinding.etPricePerLiter.text.toString().toDoubleOrNull()
         logDate = dialogBinding.tvDateCalendar.text.toString()
+
+        //TODO: validate fields
+
+        return LogEntity(0, actualKm!!, fuelLiters!!, pricePerLiter!!, logDate!!,
+            currentVehicle!!.idVehicle)
+    }
+
+    private fun insertNewLog(log: LogEntity) {
+        lifecycleScope.launch {
+            dao.insertLog(log)
+            // TODO: add adapter notify item changed
+        }
     }
 
     override fun onDestroy() {

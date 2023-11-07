@@ -3,12 +3,9 @@ package com.wikicoding.gaslogger.activities
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -23,29 +20,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.wikicoding.gaslogger.R
-import com.wikicoding.gaslogger.adapter.VehiclesAdapter
 import com.wikicoding.gaslogger.databinding.ActivityAddVehicleBinding
 import com.wikicoding.gaslogger.model.VehicleEntity
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.OutputStream
-import java.lang.Exception
-import java.util.*
-import kotlin.collections.ArrayList
 
 open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     private var binding: ActivityAddVehicleBinding? = null
     private var fuelType: String? = null
-    private var vehicleImage: Uri? = null
+    private var vehicleImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,14 +40,21 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
 
         setupFuelTypeDropdownMenu()
 
-        binding!!.ivVehicleImage.setOnClickListener {
-                pictureDialog()
-        }
+        handleImageClick()
 
+        handleSaveBtnClick()
+    }
+
+    private fun handleSaveBtnClick() {
         binding!!.btnSaveVehicle.setOnClickListener {
             saveVehicleToDatabase()
-            startActivity(Intent(this, MainActivity::class.java))
             finish()
+        }
+    }
+
+    private fun handleImageClick() {
+        binding!!.ivVehicleImage.setOnClickListener {
+            pictureDialog()
         }
     }
 
@@ -73,7 +63,6 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         /** android:parentActivityName=".activities.MainActivity" **/
         when (item.itemId) {
             android.R.id.home -> {
-                startActivity(Intent(this, MainActivity::class.java))
                 finish()
                 return true
             }
@@ -111,7 +100,7 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         val km = Integer.parseInt(binding!!.etKm.text.toString())
 
         val vehicle =
-            VehicleEntity(0, make, model, licensePlate, km, fuelType!!, vehicleImage.toString())
+            VehicleEntity(0, make, model, licensePlate, km, fuelType!!, vehicleImageUri.toString())
 
         lifecycleScope.launch {
             dao.addVehicle(vehicle)
@@ -170,7 +159,6 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         ) {
             /** using this intent to start our camera**/
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            //startActivityForResult(intent, CAMERA_REQUEST_CODE)
             activityCameraLauncher.launch(intent)
         } else {
             ActivityCompat.requestPermissions(
@@ -187,27 +175,29 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     }
 
     // Declare a contract to get a result from another activity.
-    val activityCameraLauncher =
+    private val activityCameraLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultFromActivity = result.data?.extras?.get("data") as Bitmap
 
-                // will not only save in the internal storage but also update the Uri variable to save the path in the database
-                vehicleImage = saveImageToInternalStorage(resultFromActivity)
+                // will not only save in the internal storage but
+                // also update the Uri variable to save the path in the database
+                vehicleImageUri = saveImageToInternalStorage(resultFromActivity)
 
                 binding!!.ivVehicleImage.setImageBitmap(resultFromActivity)
             }
         }
 
-    val activityGalleryLauncher =
+    private val activityGalleryLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultFromActivity = result.data?.data as Uri
 
                 val imageBitmap = convertUriToBitmap(resultFromActivity, this)
                 if (imageBitmap != null) {
-                    // will not only save in the internal storage but also update the Uri variable to save the path in the database
-                    vehicleImage = saveImageToInternalStorage(imageBitmap)
+                    // will not only save in the internal storage but
+                    // also update the Uri variable to save the path in the database
+                    vehicleImageUri = saveImageToInternalStorage(imageBitmap)
                     binding!!.ivVehicleImage.setImageBitmap(imageBitmap)
                 } else {
                     Toast.makeText(this, "Error getting image from gallery", Toast.LENGTH_SHORT)
@@ -215,24 +205,6 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
                 }
             }
         }
-
-    private fun saveImageToInternalStorage(bitmap: Bitmap): Uri {
-        val wrapper = ContextWrapper(applicationContext)
-
-        /** MODE_PRIVATE means that other applications will not be able to access this directory**/
-        var file = wrapper.getDir(IMAGE_DIRECTORY, Context.MODE_PRIVATE)
-        file = File(file, "${UUID.randomUUID()}.jpg")
-
-        try {
-            val stream: OutputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-            stream.flush()
-            stream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return Uri.parse(file.absolutePath)
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -245,22 +217,23 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
                 val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                 activityCameraLauncher.launch(intent)
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                showRationalDialogForPermissions()
             }
         }
         if (requestCode == READ_EXTERNAL_STORAGE_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                val galleryIntent = Intent(Intent.ACTION_PICK,
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                    activityGalleryLauncher.launch(galleryIntent)
+                val galleryIntent = Intent(
+                    Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                )
+                activityGalleryLauncher.launch(galleryIntent)
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                showRationalDialogForPermissions()
             }
         }
     }
 
     companion object {
-        private const val IMAGE_DIRECTORY = "GasLogImages"
         private const val CAMERA_PERMISSION_CODE = 1
         private const val READ_EXTERNAL_STORAGE_CODE = 2
     }

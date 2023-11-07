@@ -1,12 +1,12 @@
 package com.wikicoding.gaslogger.activities
 
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -14,12 +14,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.wikicoding.gaslogger.dao.GasLoggerApp
 import com.wikicoding.gaslogger.dao.GasLoggerDao
 import java.io.File
@@ -31,11 +27,30 @@ import java.util.*
 
 open class BaseActivity : AppCompatActivity() {
     lateinit var dao: GasLoggerDao
+//    var vehicleImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         dao = (application as GasLoggerApp).db.gasLoggerDao()
+    }
+
+    fun saveImageToInternalStorage(bitmap: Bitmap): Uri {
+        val wrapper = ContextWrapper(applicationContext)
+
+        /** MODE_PRIVATE means that other applications will not be able to access this directory**/
+        var file = wrapper.getDir(IMAGE_DIRECTORY, Context.MODE_PRIVATE)
+        file = File(file, "${UUID.randomUUID()}.jpg")
+
+        try {
+            val stream: OutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            stream.flush()
+            stream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return Uri.parse(file.absolutePath)
     }
 
     fun showRationalDialogForPermissions() {
@@ -68,5 +83,66 @@ open class BaseActivity : AppCompatActivity() {
         }
 
         return null
+    }
+//
+//    // Declare a contract to get a result from another activity.
+//    val activityCameraLauncher =
+//        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+//            if (result.resultCode == Activity.RESULT_OK) {
+//                val resultFromActivity = result.data?.extras?.get("data") as Bitmap
+//
+//                vehicleImageUri = saveImageToInternalStorage(resultFromActivity)
+//            } else {
+//                Toast.makeText(this, "Error getting image from camera", Toast.LENGTH_SHORT)
+//                    .show()
+//            }
+//        }
+//
+//    val activityGalleryLauncher =
+//        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+//            if (result.resultCode == Activity.RESULT_OK) {
+//                val resultFromActivity = result.data?.data as Uri
+//
+//                val imageBitmap = convertUriToBitmap(resultFromActivity, this)
+//                if (imageBitmap != null) {
+//                    vehicleImageUri = saveImageToInternalStorage(imageBitmap)
+//                } else {
+//                    Toast.makeText(this, "Error getting image from gallery", Toast.LENGTH_SHORT)
+//                        .show()
+//                }
+//            }
+//        }
+//
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<out String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        if (requestCode == CAMERA_PERMISSION_CODE) {
+//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//                activityCameraLauncher.launch(intent)
+//            } else {
+//                showRationalDialogForPermissions()
+//            }
+//        }
+//        if (requestCode == READ_EXTERNAL_STORAGE_CODE) {
+//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                val galleryIntent = Intent(
+//                    Intent.ACTION_PICK,
+//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+//                )
+//                activityGalleryLauncher.launch(galleryIntent)
+//            } else {
+//                showRationalDialogForPermissions()
+//            }
+//        }
+//    }
+
+    companion object {
+        private const val IMAGE_DIRECTORY = "GasLogImages"
+//        private const val CAMERA_PERMISSION_CODE = 1
+//        private const val READ_EXTERNAL_STORAGE_CODE = 2
     }
 }

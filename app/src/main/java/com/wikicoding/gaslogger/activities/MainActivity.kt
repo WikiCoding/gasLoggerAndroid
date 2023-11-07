@@ -36,28 +36,14 @@ class MainActivity : BaseActivity() {
 
         fetchAllVehicles()
 
-        binding!!.btnAddVehicle.setOnClickListener {
-            val intent = Intent(this, AddVehicle::class.java)
-            startActivity(intent)
-            finishAffinity()
-        }
+        handleAddVehicleClick()
 
-        val editItemSwipeHandler = object : SwipeToEditCallback(this) {
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val rvAdapter = binding!!.rvVehicles.adapter as VehiclesAdapter
-                val itemToEdit: VehicleEntity = rvAdapter.findSwipedItem(viewHolder.adapterPosition)
+        handleEditSwipe()
 
-                adapter!!.notifyItemChanged(viewHolder.adapterPosition)
-                val intent = Intent(this@MainActivity, EditVehicle::class.java)
-                intent.putExtra(Constants.UPDATE_VEHICLE_INTENT_EXTRA, itemToEdit as Serializable)
-                startActivity(intent)
-                finish()
-            }
-        }
+        handleDeleteSwipe()
+    }
 
-        val editItemTouchHandler = ItemTouchHelper(editItemSwipeHandler)
-        editItemTouchHandler.attachToRecyclerView(binding!!.rvVehicles)
-
+    private fun handleDeleteSwipe() {
         val deleteSwipeHandler = object : SwipeToDeleteCallback(this) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val rvAdapter = binding!!.rvVehicles.adapter as VehiclesAdapter
@@ -68,6 +54,29 @@ class MainActivity : BaseActivity() {
 
         val deleteItemTouchHandler = ItemTouchHelper(deleteSwipeHandler)
         deleteItemTouchHandler.attachToRecyclerView(binding!!.rvVehicles)
+    }
+
+    private fun handleEditSwipe() {
+        val editItemSwipeHandler = object : SwipeToEditCallback(this) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val rvAdapter = binding!!.rvVehicles.adapter as VehiclesAdapter
+                val itemToEdit: VehicleEntity = rvAdapter.findSwipedItem(viewHolder.adapterPosition)
+
+                val intent = Intent(this@MainActivity, EditVehicle::class.java)
+                intent.putExtra(Constants.UPDATE_VEHICLE_INTENT_EXTRA, itemToEdit as Serializable)
+                startActivity(intent)
+            }
+        }
+
+        val editItemTouchHandler = ItemTouchHelper(editItemSwipeHandler)
+        editItemTouchHandler.attachToRecyclerView(binding!!.rvVehicles)
+    }
+
+    private fun handleAddVehicleClick() {
+        binding!!.btnAddVehicle.setOnClickListener {
+            val intent = Intent(this, AddVehicle::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun fetchAllVehicles() {
@@ -125,6 +134,11 @@ class MainActivity : BaseActivity() {
             deleteConfirmationDialog.dismiss()
             fetchAllVehicles()
         }
+    }
+
+    override fun onResume() {
+        fetchAllVehicles()
+        super.onResume()
     }
 
     override fun onDestroy() {
