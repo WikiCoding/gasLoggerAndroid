@@ -14,10 +14,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Spinner
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -254,6 +251,7 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
                 vehicleImageUri = saveImageToInternalStorage(resultFromActivity)
 
                 binding!!.ivVehicleImageEdit.setImageBitmap(resultFromActivity)
+                binding!!.ivVehicleImageEdit.scaleType = ImageView.ScaleType.CENTER_CROP
             }
         }
 
@@ -268,6 +266,7 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
                     // also update the Uri variable to save the path in the database
                     vehicleImageUri = saveImageToInternalStorage(imageBitmap)
                     binding!!.ivVehicleImageEdit.setImageBitmap(imageBitmap)
+                    binding!!.ivVehicleImageEdit.scaleType = ImageView.ScaleType.CENTER_CROP
                 } else {
                     Toast.makeText(this, "Error getting image from gallery", Toast.LENGTH_SHORT)
                         .show()

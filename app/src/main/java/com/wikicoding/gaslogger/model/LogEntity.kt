@@ -11,6 +11,13 @@ data class LogEntity(
     var currentKm: Int,
     var fuelLiters: Double,
     var pricePerLiter: Double,
-    val logDate: String,
-    val idVehicle: Int // foreign key
+    var logDate: String,
+    var partialFillUp: Boolean,
+    //calculated values to keep track of
+    var lastFillKm: Int,
+    var distanceTravelled: Int,
+    var fuelConsumption: Double,
+    var fillUpCost: Double,
+    // foreign key
+    var idVehicle: Int
 ) : Serializable

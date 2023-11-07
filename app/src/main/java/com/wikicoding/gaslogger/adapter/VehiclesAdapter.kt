@@ -33,8 +33,10 @@ class VehiclesAdapter(private val vehiclesList: List<VehicleEntity>) : RecyclerV
         holder.rvVehicleLicensePlate.text = "${vehicleInstance.licensePlate}"
         if (Uri.parse(vehicleInstance.image) == null) {
             holder.rvVehicleImage.setImageResource(R.drawable.add_screen_image_placeholder)
+            holder.rvVehicleImage.scaleType = ImageView.ScaleType.CENTER_CROP
         } else {
             holder.rvVehicleImage.setImageURI(Uri.parse(vehicleInstance.image))
+            holder.rvVehicleImage.scaleType = ImageView.ScaleType.CENTER_CROP
         }
 
         holder.itemView.setOnClickListener {

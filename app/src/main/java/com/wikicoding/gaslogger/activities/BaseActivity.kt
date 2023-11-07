@@ -23,6 +23,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.lang.Exception
+import java.text.SimpleDateFormat
 import java.util.*
 
 open class BaseActivity : AppCompatActivity() {
@@ -83,6 +84,12 @@ open class BaseActivity : AppCompatActivity() {
         }
 
         return null
+    }
+
+    fun dateToTimestamp(dateString: String): Long {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+        val date = dateFormat.parse(dateString)
+        return date?.time ?: 0L
     }
 //
 //    // Declare a contract to get a result from another activity.

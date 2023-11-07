@@ -5,13 +5,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.wikicoding.gaslogger.databinding.LogRvItemBinding
 import com.wikicoding.gaslogger.model.LogEntity
-import com.wikicoding.gaslogger.model.VehicleEntity
 
 class LogsAdapter(private val logsList: List<LogEntity>) : RecyclerView.Adapter<LogsAdapter.AdapterVH>() {
     inner class AdapterVH(binding: LogRvItemBinding) : RecyclerView.ViewHolder(binding.root) {
         val actualKm = binding.tvActualKm
         val logDate = binding.tvDate
         val pricePerLiter = binding.tvPricePerLiter
+        val distanceTravelled = binding.tvDistanceTravelled
+        val totalCost = binding.tvTotalCost
+        val fuelConsumption = binding.tvFuelConsumption
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdapterVH {
@@ -22,9 +24,12 @@ class LogsAdapter(private val logsList: List<LogEntity>) : RecyclerView.Adapter<
 
     override fun onBindViewHolder(holder: AdapterVH, position: Int) {
         val logInstance = logsList[position]
-        holder.actualKm.text = logInstance.currentKm.toString()
-        holder.logDate.text = logInstance.logDate
-        holder.pricePerLiter.text = logInstance.pricePerLiter.toString()
+        holder.actualKm.text = "${logInstance.currentKm}Km"
+        holder.logDate.text = "On: ${logInstance.logDate}"
+        holder.pricePerLiter.text = "${logInstance.pricePerLiter}€/L"
+        holder.distanceTravelled.text = "+${logInstance.distanceTravelled}km"
+        holder.totalCost.text = "${logInstance.fillUpCost}€"
+        holder.fuelConsumption.text = "${logInstance.fuelConsumption}L/100Km"
     }
 
     override fun getItemCount(): Int {

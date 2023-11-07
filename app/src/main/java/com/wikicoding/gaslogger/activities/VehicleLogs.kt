@@ -26,7 +26,9 @@ import com.wikicoding.gaslogger.model.relations.VehicleWithLogs
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.function.DoubleToLongFunction
 import kotlin.collections.ArrayList
+import kotlin.math.round
 
 class VehicleLogs : BaseActivity() {
     private var binding: ActivityVehicleLogsBinding? = null
@@ -39,7 +41,13 @@ class VehicleLogs : BaseActivity() {
     private var fuelLiters: Double? = null
     private var pricePerLiter: Double? = null
     private var logDate: String? = null
+    private var partialFillUpCheckBox: Boolean = false
+    private var lastLog: LogEntity? = null
     private var adapter: LogsAdapter? = null
+    private var lastFillKm = 0
+    private var distanceTravelled = 0
+    private var fuelConsumptionPer100Km = 0.0
+    private var fillUpCost = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +63,6 @@ class VehicleLogs : BaseActivity() {
         handleEditSwipe()
         handleDeleteSwipe()
 
-        // TODO: create recyclerview adapter
         // TODO: finish the excel export option
     }
 
@@ -108,14 +115,29 @@ class VehicleLogs : BaseActivity() {
             list = dao.fetchVehicleWithLogs(idVehicle) as ArrayList<VehicleWithLogs>
 
             if (list!![0].logs.isNotEmpty()) {
-//                Log.e("logs", list!![0].logs.toString())
-                logsList = list!![0].logs
+                sortLogsListByDateDESC()
             } else {
                 logsList = listOf()
             }
 
             setupLogsRecyclerView(logsList!!)
         }
+    }
+
+    private fun sortLogsListByDateDESC() {
+        logsList = list!![0].logs
+
+        (logsList as ArrayList<LogEntity>).sortWith { log1, log2 ->
+            val timestamp1 = dateToTimestamp(log1.logDate)
+            val timestamp2 = dateToTimestamp(log2.logDate)
+            when {
+                timestamp1 > timestamp2 -> -1
+                timestamp1 < timestamp2 -> 1
+                else -> 0
+            }
+        }
+
+        lastLog = logsList!![0]
     }
 
     private fun updateDateInView(dialogBinding: InsertNewLogDialogBinding) {
@@ -133,18 +155,23 @@ class VehicleLogs : BaseActivity() {
         getDates(dialogBinding)
         insertDialog.show()
 
+        if (partialFillUpCheckBox) dialogBinding.checkboxPartialFillUp.isChecked = true
+
         listenToDateTextInputClick(dialogBinding)
+        listenToPartialFillUpCheckBoxChanges(dialogBinding)
 
         dialogBinding.tvProceed.setOnClickListener {
             val newLog = setLogObjectFromFields(dialogBinding)
             insertLogToDatabase(newLog)
-            /** later-on I'll have a sorting by date function so I prefer for the moment to fetch all entries **/
+
             getLogs(currentVehicle!!.idVehicle)
             insertDialog.dismiss()
+            partialFillUpCheckBox = false
         }
 
         dialogBinding.tvCancel.setOnClickListener {
             insertDialog.dismiss()
+            partialFillUpCheckBox = false
         }
     }
 
@@ -170,6 +197,18 @@ class VehicleLogs : BaseActivity() {
         }
     }
 
+    private fun runCalculatedLogFields() {
+        fillUpCost = round((fuelLiters!! * pricePerLiter!!) * 100.0) / 100.0
+
+        if (logsList!!.isNotEmpty()) {
+            lastFillKm = logsList!![0].currentKm
+            distanceTravelled = actualKm!! - lastFillKm
+            if (!partialFillUpCheckBox)
+                fuelConsumptionPer100Km =
+                    round(((100 * fuelLiters!!) / distanceTravelled)* 100.0) / 100.0
+        }
+    }
+
     private fun setLogObjectFromFields(dialogBinding: InsertNewLogDialogBinding): LogEntity {
         actualKm = dialogBinding.etKm.text.toString().toInt()
         fuelLiters = dialogBinding.etFuelLiters.text.toString().toDoubleOrNull()
@@ -178,14 +217,53 @@ class VehicleLogs : BaseActivity() {
 
         //TODO: validate fields
 
+        runCalculatedLogFields()
+
         return LogEntity(0, actualKm!!, fuelLiters!!, pricePerLiter!!, logDate!!,
-            currentVehicle!!.idVehicle)
+            partialFillUpCheckBox, lastFillKm, distanceTravelled, fuelConsumptionPer100Km,
+            fillUpCost, currentVehicle!!.idVehicle)
+    }
+
+    private fun setLogObjectFromEditedFields(dialogBinding: InsertNewLogDialogBinding,
+                                             currentLog: LogEntity): LogEntity {
+        actualKm = dialogBinding.etKm.text.toString().toInt()
+        fuelLiters = dialogBinding.etFuelLiters.text.toString().toDoubleOrNull()
+        pricePerLiter = dialogBinding.etPricePerLiter.text.toString().toDoubleOrNull()
+        logDate = dialogBinding.tvDateCalendar.text.toString()
+        Log.e("currentLog", currentLog.toString())
+        Log.e("partial", currentLog.toString())
+        //TODO: validate fields
+
+        runCalculatedLogFieldsForEdit(currentLog)
+
+        return LogEntity(currentLog.id, actualKm!!, fuelLiters!!, pricePerLiter!!, logDate!!,
+            partialFillUpCheckBox, lastFillKm, distanceTravelled, fuelConsumptionPer100Km,
+            fillUpCost, currentVehicle!!.idVehicle)
+    }
+
+    private fun runCalculatedLogFieldsForEdit(currentLog: LogEntity) {
+        val indexOfCurrentLog = logsList!!.indexOf(currentLog)
+
+        //TODO: falta o unset do partial fill-up no edit!
+
+        fillUpCost = round((fuelLiters!! * pricePerLiter!!) * 100.0) / 100.0
+
+            lastFillKm = logsList!![indexOfCurrentLog + 1].currentKm
+            distanceTravelled = actualKm!! - lastFillKm
+            if (!partialFillUpCheckBox)
+                fuelConsumptionPer100Km =
+                    round(((100 * fuelLiters!!) / distanceTravelled)* 100.0) / 100.0
+    }
+
+    private fun listenToPartialFillUpCheckBoxChanges(dialogBinding: InsertNewLogDialogBinding) {
+        dialogBinding.checkboxPartialFillUp.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) partialFillUpCheckBox = true
+        }
     }
 
     private fun insertLogToDatabase(log: LogEntity) {
         lifecycleScope.launch {
             dao.insertLog(log)
-            // TODO: add adapter notify item changed
         }
     }
 
@@ -221,25 +299,14 @@ class VehicleLogs : BaseActivity() {
             updateLogInDatabase(newLog)
 
             editDialog.dismiss()
+            partialFillUpCheckBox = false
         }
 
         dialogBinding.tvCancel.setOnClickListener {
             getLogs(currentVehicle!!.idVehicle)
             editDialog.dismiss()
+            partialFillUpCheckBox = false
         }
-    }
-
-    private fun setLogObjectFromEditedFields(dialogBinding: InsertNewLogDialogBinding,
-                                             currentLog: LogEntity): LogEntity {
-        actualKm = dialogBinding.etKm.text.toString().toInt()
-        fuelLiters = dialogBinding.etFuelLiters.text.toString().toDoubleOrNull()
-        pricePerLiter = dialogBinding.etPricePerLiter.text.toString().toDoubleOrNull()
-        logDate = dialogBinding.tvDateCalendar.text.toString()
-
-        //TODO: validate fields
-
-        return LogEntity(currentLog.id, actualKm!!, fuelLiters!!, pricePerLiter!!, logDate!!,
-            currentVehicle!!.idVehicle)
     }
 
     private fun updateLogInDatabase(log: LogEntity) {
@@ -254,6 +321,11 @@ class VehicleLogs : BaseActivity() {
         dialogBinding.etKm.setText(logToEdit.currentKm.toString())
         dialogBinding.etFuelLiters.setText(logToEdit.fuelLiters.toString())
         dialogBinding.tvDateCalendar.setText(logToEdit.logDate)
+        partialFillUpCheckBox = logToEdit.partialFillUp
+
+        Log.e("log from db", logToEdit.partialFillUp.toString())
+
+        if (partialFillUpCheckBox) dialogBinding.checkboxPartialFillUp.isChecked = true
     }
 
     private fun handleDeleteSwipe() {
