@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cv_rv_element"
+        android:id="@+id/cv_rv_log_element"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white_color"
@@ -25,19 +24,6 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/iv_vehicle_image"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_marginStart="5dp"
-                android:background="@drawable/shape_image_view_border"
-                android:scaleType="fitCenter"
-                android:src="@drawable/add_screen_image_placeholder"
-                app:layout_constraintBottom_toBottomOf="@+id/cv_rv_element"
-                app:layout_constraintEnd_toStartOf="@id/tv_vehicle"
-                app:layout_constraintStart_toStartOf="@+id/cv_rv_element"
-                app:layout_constraintTop_toTopOf="@+id/cv_rv_element" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -46,31 +32,28 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tv_vehicle"
+                    android:id="@+id/tv_actual_km"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    tools:text="BMW E46" />
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tv_gas_km"
+                    android:id="@+id/tv_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    tools:text="286471km Petrol" />
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tv_license_plate"
+                    android:id="@+id/tv_price_per_liter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    tools:text="11-13-QM" />
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

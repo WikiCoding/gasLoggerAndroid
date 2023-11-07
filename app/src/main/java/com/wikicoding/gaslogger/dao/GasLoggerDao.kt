@@ -26,4 +26,10 @@ interface GasLoggerDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLog(log: LogEntity)
+
+    @Update
+    suspend fun updateLog(log: LogEntity)
+
+    @Delete
+    suspend fun deleteLog(log: LogEntity)
 }

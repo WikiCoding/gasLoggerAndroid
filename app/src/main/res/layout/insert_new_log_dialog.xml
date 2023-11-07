@@ -44,7 +44,9 @@
         android:textColor="@color/black"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Enter Km" />
+        android:hint="Enter Km"
+        android:imeOptions="actionGo"
+        android:inputType="number" />
 
     <TextView
         android:id="@+id/tv_fuel_liters"
@@ -69,7 +71,9 @@
         android:textColor="@color/black"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Enter Liters" />
+        android:hint="Enter Liters"
+        android:imeOptions="actionGo"
+        android:inputType="number" />
 
     <TextView
         android:id="@+id/tv_price_per_liter"
@@ -94,7 +98,9 @@
         android:textColor="@color/black"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Enter Price/L" />
+        android:hint="Enter Price/L"
+        android:imeOptions="actionGo"
+        android:inputType="number" />
 
     <TextView
         android:id="@+id/tv_date"

@@ -22,9 +22,8 @@ class VehiclesAdapter(private val vehiclesList: List<VehicleEntity>) : RecyclerV
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdapterVH {
         return AdapterVH(
-            VehicleRvItemBinding.inflate(LayoutInflater.from(parent.context), parent,
-                false)
-        )
+            VehicleRvItemBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: AdapterVH, position: Int) {

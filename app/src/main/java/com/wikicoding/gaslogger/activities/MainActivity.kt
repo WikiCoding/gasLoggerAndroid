@@ -3,7 +3,10 @@ package com.wikicoding.gaslogger.activities
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,11 +39,22 @@ class MainActivity : BaseActivity() {
 
         fetchAllVehicles()
 
-        handleAddVehicleClick()
-
         handleEditSwipe()
 
         handleDeleteSwipe()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.app_bar_menu_logs, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.mi_add_log -> handleAddVehicleClick()
+            R.id.mi_export_excel -> Toast.makeText(this, "not yet developed", Toast.LENGTH_SHORT).show()
+        }
+        return true
     }
 
     private fun handleDeleteSwipe() {
@@ -73,10 +87,8 @@ class MainActivity : BaseActivity() {
     }
 
     private fun handleAddVehicleClick() {
-        binding!!.btnAddVehicle.setOnClickListener {
             val intent = Intent(this, AddVehicle::class.java)
             startActivity(intent)
-        }
     }
 
     private fun fetchAllVehicles() {
