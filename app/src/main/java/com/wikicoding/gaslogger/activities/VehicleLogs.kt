@@ -3,7 +3,6 @@ package com.wikicoding.gaslogger.activities
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -117,7 +116,7 @@ class VehicleLogs : BaseActivity() {
             list = dao.fetchVehicleWithLogs(idVehicle) as ArrayList<VehicleWithLogs>
 
             if (list!![0].logs.isNotEmpty()) {
-                sortLogsListByDateDESC()
+                sortLogsListByKmDESC()
             } else {
                 logsList = listOf()
             }
@@ -126,15 +125,15 @@ class VehicleLogs : BaseActivity() {
         }
     }
 
-    private fun sortLogsListByDateDESC() {
+    private fun sortLogsListByKmDESC() {
         logsList = list!![0].logs
 
         (logsList as ArrayList<LogEntity>).sortWith { log1, log2 ->
-            val timestamp1 = dateToTimestamp(log1.logDate)
-            val timestamp2 = dateToTimestamp(log2.logDate)
+            val km1 = log1.currentKm
+            val km2 = log2.currentKm
             when {
-                timestamp1 > timestamp2 -> -1
-                timestamp1 < timestamp2 -> 1
+                km1 > km2 -> -1
+                km1 < km2 -> 1
                 else -> 0
             }
         }
