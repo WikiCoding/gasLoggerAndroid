@@ -14,6 +14,8 @@ class LogsAdapter(private val logsList: List<LogEntity>) : RecyclerView.Adapter<
         val distanceTravelled = binding.tvDistanceTravelled
         val totalCost = binding.tvTotalCost
         val fuelConsumption = binding.tvFuelConsumption
+        val liters = binding.tvLiters
+        val partialFillUp = binding.tvPartialFillUp
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdapterVH {
@@ -30,6 +32,9 @@ class LogsAdapter(private val logsList: List<LogEntity>) : RecyclerView.Adapter<
         holder.distanceTravelled.text = "+${logInstance.distanceTravelled}km"
         holder.totalCost.text = "${logInstance.fillUpCost}€"
         holder.fuelConsumption.text = "${logInstance.fuelConsumption}L/100Km"
+        holder.liters.text = "${logInstance.fuelLiters}L"
+        if (!logInstance.partialFillUp) holder.partialFillUp.text = "Topped"
+        else holder.partialFillUp.text = "Partial fill"
     }
 
     override fun getItemCount(): Int {

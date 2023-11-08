@@ -48,6 +48,7 @@ class VehicleLogs : BaseActivity() {
     private var distanceTravelled = 0
     private var fuelConsumptionPer100Km = 0.0
     private var fillUpCost = 0.0
+    private var previousLogDate = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -232,7 +233,6 @@ class VehicleLogs : BaseActivity() {
         if (validationResultCode < 0) {
             showErrorMessages(validationResultCode)
             return null
-            //TODO: handle this null!
         }
 
         runCalculatedLogFields()
@@ -245,7 +245,7 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun setLogObjectFromEditedDialogFields(
-        dialogBinding: InsertNewLogDialogBinding, currentLog: LogEntity): LogEntity? {
+        dialogBinding: InsertNewLogDialogBinding, selectedLogToEdit: LogEntity): LogEntity? {
         if (dialogBinding.etKm.text.isEmpty()) {
             Toast.makeText(this, "Please provide km input!", Toast.LENGTH_SHORT).show()
             return null
@@ -257,17 +257,17 @@ class VehicleLogs : BaseActivity() {
         logDate = dialogBinding.tvDateCalendar.text.toString()
 
         val validationResultCode =
-            validateEditDialogInputFields(actualKm, fuelLiters, pricePerLiter, logDate, currentLog)
+            validateEditDialogInputFields(actualKm, fuelLiters, pricePerLiter, logDate, selectedLogToEdit)
 
         if (validationResultCode < 0) {
             showErrorMessages(validationResultCode)
             return null
         }
 
-        runCalculatedLogFieldsOfEdit(currentLog)
+        runCalculatedLogFieldsOfEdit(selectedLogToEdit)
 
         return LogEntity(
-            currentLog.id, actualKm!!, fuelLiters!!, pricePerLiter!!, logDate!!,
+            selectedLogToEdit.id, actualKm!!, fuelLiters!!, pricePerLiter!!, logDate!!,
             partialFillUpCheckBox, lastFillKm, distanceTravelled, fuelConsumptionPer100Km,
             fillUpCost, currentVehicle!!.idVehicle
         )
@@ -329,25 +329,28 @@ class VehicleLogs : BaseActivity() {
         }
     }
 
-    private fun runCalculatedLogFieldsOfEdit(currentLog: LogEntity) {
+    private fun runCalculatedLogFieldsOfEdit(selectedLogToEdit: LogEntity) {
         // TODO: fix the situation of having 2 fill ups in the same day,
         //  distance travelled issue (problem with indexOf if 2 changes are made)
         //  and consumption being infinity which points to a/0
-        val indexOfCurrentLog = logsList!!.indexOf(currentLog)
+        val indexOfCurrentLog = logsList!!.indexOf(selectedLogToEdit)
 
         fillUpCost = round((fuelLiters!! * pricePerLiter!!) * 100.0) / 100.0
 
-        Log.e("partial", currentLog.partialFillUp.toString())
-
         if (logsList!!.size > 1) {
-            // TODO: this if statement is what needs to be fixed
-            lastFillKm =
-                if (logDate == currentLog.logDate && partialFillUpCheckBox == currentLog.partialFillUp) {
-                    logsList!![indexOfCurrentLog].currentKm
+            if (logDate == selectedLogToEdit.logDate) {
+                lastFillKm = selectedLogToEdit.lastFillKm
+                if (actualKm == selectedLogToEdit.currentKm) {
+                    distanceTravelled = selectedLogToEdit.distanceTravelled
+                } else {
+                    distanceTravelled = actualKm!! - lastFillKm
                 }
-                else logsList!![indexOfCurrentLog + 1].currentKm
+            }
+            else {
+                lastFillKm = logsList!![indexOfCurrentLog + 1].currentKm
+                distanceTravelled = actualKm!! - lastFillKm
+            }
 
-            distanceTravelled = actualKm!! - lastFillKm
             fuelConsumptionPer100Km = if (!partialFillUpCheckBox)
                 round(((100 * fuelLiters!!) / distanceTravelled) * 100.0) / 100.0
             else 0.0
@@ -387,8 +390,8 @@ class VehicleLogs : BaseActivity() {
         val dialogBinding = InsertNewLogDialogBinding.inflate(layoutInflater)
         editDialog.setContentView(dialogBinding.root)
 
-        fillDialogFieldsWhenDialogShows(dialogBinding, logToEdit)
         getDates(dialogBinding)
+        fillDialogFieldsWhenDialogShows(dialogBinding, logToEdit)
 
         editDialog.show()
 
@@ -427,6 +430,8 @@ class VehicleLogs : BaseActivity() {
         dialogBinding.etKm.setText(logToEdit.currentKm.toString())
         dialogBinding.etFuelLiters.setText(logToEdit.fuelLiters.toString())
         dialogBinding.tvDateCalendar.setText(logToEdit.logDate)
+        previousLogDate = logToEdit.logDate
+
         partialFillUpCheckBox = logToEdit.partialFillUp
 
         if (partialFillUpCheckBox) dialogBinding.checkboxPartialFillUp.isChecked = true
