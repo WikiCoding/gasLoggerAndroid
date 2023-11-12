@@ -3,6 +3,7 @@ package com.wikicoding.gaslogger.activities
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -35,6 +36,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -45,6 +47,8 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     private var editedVehicle: VehicleEntity? = null
     private var pictureIsChanged: Boolean = false
     private var vehicleImageUri: Uri? = null
+    private var calendar = Calendar.getInstance()
+    private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,9 +67,36 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         handleSaveUpdatesBtnClick()
     }
 
+    private fun setCurrentDate() {
+        val myFormat = "dd-MM-yyyy"
+        val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+        binding!!.etRegistrationDate.setText(sdf.format(calendar.time).toString())
+    }
+
+    private fun getDates() {
+        dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            setCurrentDate()
+        }
+        setCurrentDate()
+    }
+
+    private fun listenToDateInputClick() {
+        binding!!.etRegistrationDate.setOnClickListener {
+            DatePickerDialog(
+                this@EditVehicle, dateSetListener,
+                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+
     private fun handleSaveUpdatesBtnClick() {
         binding!!.btnUpdateVehicleEdit.setOnClickListener {
             editedVehicle = setupUpdatedForm()
+            if (editedVehicle == null) return@setOnClickListener
 
             lifecycleScope.launch {
                 dao.updateVehicle(editedVehicle!!)
@@ -100,7 +131,8 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         return super.onContextItemSelected(item)
     }
 
-    private fun validateForm(make: String, model: String, licensePlateEdit: String): Boolean {
+    private fun validateForm(make: String, model: String, licensePlateEdit: String,
+                             registrationDateEdit: String): Boolean {
         val km: Int
         try {
             km = Integer.parseInt(binding!!.etKmEdit.text.toString())
@@ -120,6 +152,16 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
             return false
         }
 
+        val registrationDateLong = dateToTimestamp(registrationDateEdit)
+
+        if (registrationDateLong > System.currentTimeMillis()) {
+            Toast.makeText(
+                applicationContext, "Registration date can't be a date in the future",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
         return true
     }
 
@@ -127,8 +169,9 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         val makeEdit = binding!!.etMakeEdit.text.toString()
         val modelEdit = binding!!.etModelEdit.text.toString()
         val licensePlateEdit = binding!!.etLicensePlate.text.toString()
+        val registrationDateEdit = binding!!.etRegistrationDate.text.toString()
 
-        if (!validateForm(makeEdit, modelEdit, licensePlateEdit)) return null;
+        if (!validateForm(makeEdit, modelEdit, licensePlateEdit, registrationDateEdit)) return null;
 
         val kmEdit = Integer.parseInt(binding!!.etKmEdit.text.toString())
 
@@ -136,7 +179,7 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         else vehicleImageUri.toString()
 
         return VehicleEntity(
-            currentVehicle!!.idVehicle, makeEdit, modelEdit, licensePlateEdit, kmEdit,
+            currentVehicle!!.idVehicle, makeEdit, modelEdit, licensePlateEdit, kmEdit, registrationDateEdit,
             fuelTypeEdited!!, imageEdit
         )
     }
@@ -148,6 +191,9 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         binding!!.etKmEdit.setText(currentVehicle?.startKm.toString())
         binding!!.etLicensePlate.setText(currentVehicle?.licensePlate)
         setupFuelTypeDropdownMenu()
+        getDates()
+        setCurrentDate()
+        listenToDateInputClick()
     }
 
     private fun setupFuelTypeDropdownMenu() {

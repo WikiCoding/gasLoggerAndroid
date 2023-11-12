@@ -38,7 +38,7 @@
             android:hint="Make, eg. Audi, BMW,..."
             android:imeOptions="actionGo"
             android:inputType="textCapSentences"
-            android:textColor="#363A43"
+            android:textColor="?android:textColorPrimary"
             android:textColorHint="#7A8089" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -62,7 +62,7 @@
             android:hint="Model, eg. B6, E46,..."
             android:imeOptions="actionGo"
             android:inputType="textCapSentences"
-            android:textColor="#363A43"
+            android:textColor="?android:textColorPrimary"
             android:textColorHint="#7A8089" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -86,7 +86,7 @@
             android:hint="Km, eg. 147562..."
             android:imeOptions="actionGo"
             android:inputType="number"
-            android:textColor="#363A43"
+            android:textColor="?android:textColorPrimary"
             android:textColorHint="#7A8089" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -98,7 +98,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         app:layout_constraintTop_toBottomOf="@id/til_add_km"
-        app:layout_constraintBottom_toTopOf="@id/dropdown_fuel_type"
+        app:layout_constraintBottom_toTopOf="@id/til_registration_date"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -110,9 +110,32 @@
             android:hint="License Plate, eg. 14-75-OP"
             android:imeOptions="actionGo"
             android:inputType="textCapSentences"
-            android:textColor="#363A43"
+            android:textColor="?android:textColorPrimary"
             android:textColorHint="#7A8089" />
 
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_registration_date"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toBottomOf="@id/til_add_license_plate"
+        app:layout_constraintBottom_toTopOf="@id/dropdown_fuel_type"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/et_registration_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:imeOptions="actionGo"
+            android:hint="Vehicle Registration Date"
+            android:textColor="?android:textColorPrimary" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <Spinner
@@ -120,8 +143,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_dropdown"
+        android:textColor="?android:textColorPrimary"
         android:spinnerMode="dropdown"
-        app:layout_constraintTop_toBottomOf="@id/til_add_license_plate"
+        app:layout_constraintTop_toBottomOf="@id/til_registration_date"
         app:layout_constraintBottom_toTopOf="@id/btn_save_vehicle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -142,6 +166,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Developed by Tiago Castro - tiagomscastro@gmail.com / https://github.com/WikiCoding"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

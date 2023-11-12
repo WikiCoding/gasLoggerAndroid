@@ -12,6 +12,7 @@ data class VehicleEntity(
     var model: String,
     var licensePlate: String,
     var startKm: Int,
+    var registrationDate: String,
     var fuelType: String,
     var image: String
 ) : Serializable

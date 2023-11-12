@@ -89,7 +89,7 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     fun dateToTimestamp(dateString: String): Long {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
         val date = dateFormat.parse(dateString)
         return date?.time ?: 0L
     }

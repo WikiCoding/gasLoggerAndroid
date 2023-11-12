@@ -57,7 +57,16 @@
                     tools:text="BMW E46" />
 
                 <TextView
-                    android:id="@+id/tv_gas_km"
+                    android:id="@+id/tv_license_plate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="11-13-QM" />
+
+                <TextView
+                    android:id="@+id/tv_registration_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
@@ -66,13 +75,13 @@
                     tools:text="286471km Petrol" />
 
                 <TextView
-                    android:id="@+id/tv_license_plate"
+                    android:id="@+id/tv_gas_km"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    tools:text="11-13-QM" />
+                    tools:text="286471km Petrol" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

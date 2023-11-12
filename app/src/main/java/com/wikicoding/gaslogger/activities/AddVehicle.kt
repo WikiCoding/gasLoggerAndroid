@@ -3,6 +3,7 @@ package com.wikicoding.gaslogger.activities
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -19,13 +20,18 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.databinding.ActivityAddVehicleBinding
+import com.wikicoding.gaslogger.databinding.InsertNewLogDialogBinding
 import com.wikicoding.gaslogger.model.VehicleEntity
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     private var binding: ActivityAddVehicleBinding? = null
     private var fuelType: String? = null
     private var vehicleImageUri: Uri? = null
+    private var calendar = Calendar.getInstance()
+    private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +41,10 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.title = "Add Vehicle"
 
+        getDates()
+        setCurrentDate()
+        listenToDateInputClick()
+
         setupFuelTypeDropdownMenu()
 
         handleImageClick()
@@ -42,9 +52,35 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         handleSaveBtnClick()
     }
 
+    private fun setCurrentDate() {
+        val myFormat = "dd-MM-yyyy"
+        val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+        binding!!.etRegistrationDate.setText(sdf.format(calendar.time).toString())
+    }
+
+    private fun getDates() {
+        dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            setCurrentDate()
+        }
+    }
+
+    private fun listenToDateInputClick() {
+        binding!!.etRegistrationDate.setOnClickListener {
+            DatePickerDialog(
+                this@AddVehicle, dateSetListener,
+                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+
     private fun handleSaveBtnClick() {
         binding!!.btnSaveVehicle.setOnClickListener {
-            saveVehicleToDatabase()
+            val resultCode = saveVehicleToDatabase()
+            if (resultCode == -1) return@setOnClickListener
             finish()
         }
     }
@@ -88,23 +124,25 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
 
     override fun onNothingSelected(parent: AdapterView<*>?) {}
 
-    private fun saveVehicleToDatabase() {
+    private fun saveVehicleToDatabase(): Int {
         val make = binding!!.etMake.text.toString()
         val model = binding!!.etModel.text.toString()
         val licensePlate = binding!!.etLicensePlate.text.toString()
+        val registrationDate = binding!!.etRegistrationDate.text.toString()
 
-        if (!validateForm(make, model, licensePlate)) return
+        if (!validateForm(make, model, licensePlate, registrationDate)) return -1
         val km = Integer.parseInt(binding!!.etKm.text.toString())
 
         val vehicle =
-            VehicleEntity(0, make, model, licensePlate, km, fuelType!!, vehicleImageUri.toString())
+            VehicleEntity(0, make, model, licensePlate, km, registrationDate, fuelType!!, vehicleImageUri.toString())
 
         lifecycleScope.launch {
             dao.addVehicle(vehicle)
         }
+        return 0
     }
 
-    private fun validateForm(make: String, model: String, licensePlate: String): Boolean {
+    private fun validateForm(make: String, model: String, licensePlate: String, registrationDate: String): Boolean {
         val km: Int
         try {
             km = Integer.parseInt(binding!!.etKm.text.toString())
@@ -123,6 +161,11 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
             ).show()
             return false
         }
+
+        val registrationDateLong = dateToTimestamp(registrationDate)
+        println(registrationDateLong)
+        println(System.currentTimeMillis())
+        if (registrationDateLong > System.currentTimeMillis()) return false
 
         return true
     }

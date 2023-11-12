@@ -17,6 +17,7 @@ class VehiclesAdapter(private val vehiclesList: List<VehicleEntity>) : RecyclerV
         val rvVehicleInfo: TextView = binding.tvVehicle
         val rvVehicleLicensePlate: TextView = binding.tvLicensePlate
         val rvVehicleGasKm: TextView = binding.tvGasKm
+        val rvVehicleRegistration: TextView = binding.tvRegistrationDate
         val rvVehicleImage: ImageView = binding.ivVehicleImage
     }
 
@@ -29,8 +30,9 @@ class VehiclesAdapter(private val vehiclesList: List<VehicleEntity>) : RecyclerV
     override fun onBindViewHolder(holder: AdapterVH, position: Int) {
         val vehicleInstance = vehiclesList[position]
         holder.rvVehicleInfo.text = "${vehicleInstance.make} ${vehicleInstance.model}"
-        holder.rvVehicleGasKm.text = "${vehicleInstance.startKm}km on ${vehicleInstance.fuelType}"
+        holder.rvVehicleRegistration.text = "From: ${vehicleInstance.registrationDate}"
         holder.rvVehicleLicensePlate.text = "${vehicleInstance.licensePlate}"
+        holder.rvVehicleGasKm.text = "${vehicleInstance.startKm}km on ${vehicleInstance.fuelType}"
         if (Uri.parse(vehicleInstance.image) == null) {
             holder.rvVehicleImage.setImageResource(R.drawable.add_screen_image_placeholder)
             holder.rvVehicleImage.scaleType = ImageView.ScaleType.CENTER_CROP
