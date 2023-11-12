@@ -1,0 +1,8 @@
+//        I'd have the register the color in the LogEntity on the Rv_Adapter
+//        if (position > 0 && logsList[position - 1].fuelConsumption < logInstance.fuelConsumption) {
+//            holder.fuelConsumption.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.red))
+//        } else if (position > 0 && logsList[position - 1].fuelConsumption > logInstance.fuelConsumption) {
+//            holder.fuelConsumption.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.green))
+//        } else {
+//            holder.fuelConsumption.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.yellow))
+//        }

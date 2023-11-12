@@ -22,6 +22,7 @@ import com.wikicoding.gaslogger.databinding.InsertNewLogDialogBinding
 import com.wikicoding.gaslogger.model.LogEntity
 import com.wikicoding.gaslogger.model.VehicleEntity
 import com.wikicoding.gaslogger.model.relations.VehicleWithLogs
+import com.wikicoding.gaslogger.utils.ExcelExportCallback
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -48,6 +49,7 @@ class VehicleLogs : BaseActivity() {
     private var fuelConsumptionPer100Km = 0.0
     private var fillUpCost = 0.0
     private var previousLogDate = ""
+    private lateinit var excelCallback: ExcelExportCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,8 +80,10 @@ class VehicleLogs : BaseActivity() {
                 return true
             }
             R.id.mi_add_log -> insertLogDialog()
-            R.id.mi_export_excel -> Toast.makeText(this, "not yet developed", Toast.LENGTH_SHORT)
-                .show()
+            R.id.mi_export_excel -> {
+                excelCallback = ExcelExportCallback(this, logsList!!, currentVehicle!!)
+                excelCallback.exportExcel()
+            }
         }
         return true
     }
@@ -329,9 +333,6 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun runCalculatedLogFieldsOfEdit(selectedLogToEdit: LogEntity) {
-        // TODO: fix the situation of having 2 fill ups in the same day,
-        //  distance travelled issue (problem with indexOf if 2 changes are made)
-        //  and consumption being infinity which points to a/0
         val indexOfCurrentLog = logsList!!.indexOf(selectedLogToEdit)
 
         fillUpCost = round((fuelLiters!! * pricePerLiter!!) * 100.0) / 100.0
