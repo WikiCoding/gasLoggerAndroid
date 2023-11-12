@@ -1,23 +1,24 @@
 package com.wikicoding.gaslogger.activities
 
-import android.app.Activity
+import android.R
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.Settings
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import com.wikicoding.gaslogger.dao.GasLoggerApp
 import com.wikicoding.gaslogger.dao.GasLoggerDao
+import com.wikicoding.gaslogger.databinding.DeleteConfirmationDialogBinding
+import com.wikicoding.gaslogger.model.LogEntity
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -25,6 +26,7 @@ import java.io.OutputStream
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 open class BaseActivity : AppCompatActivity() {
     lateinit var dao: GasLoggerDao

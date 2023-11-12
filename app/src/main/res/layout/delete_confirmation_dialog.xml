@@ -4,14 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="15dp">
+    android:padding="15dp"
+    android:background="?customColorValue">
 
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Confirmation"
-        android:textColor="@android:color/black"
+        android:textColor="?android:textColorPrimary"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -26,7 +27,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Are you sure you want to proceed?"
-        android:textColor="@color/black"
+        android:textColor = "?android:textColorPrimary"
         android:textSize="18sp"
         app:layout_constraintTop_toBottomOf="@id/tv_title"
         app:layout_constraintBottom_toTopOf="@id/tv_proceed"
@@ -60,7 +61,7 @@
         android:inputType="textEmailAddress"
         android:padding="10dp"
         android:text="CANCEL"
-        android:textColor="@android:color/black"
+        android:textColor = "?android:textColorPrimary"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/tv_message"
         app:layout_constraintBottom_toBottomOf="parent"

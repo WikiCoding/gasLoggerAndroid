@@ -41,7 +41,6 @@ class VehicleLogs : BaseActivity() {
     private var pricePerLiter: Double? = null
     private var logDate: String? = null
     private var partialFillUpCheckBox: Boolean = false
-    private var lastLog: LogEntity? = null
     private var adapter: LogsAdapter? = null
     private var lastFillKm = 0
     private var distanceTravelled = 0
@@ -138,8 +137,6 @@ class VehicleLogs : BaseActivity() {
                 else -> 0
             }
         }
-
-        lastLog = logsList!![0]
     }
 
     private fun setDateInDialogWhenShows(dialogBinding: InsertNewLogDialogBinding) {
@@ -149,7 +146,7 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun insertLogDialog() {
-        val insertDialog = Dialog(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        val insertDialog = Dialog(this, R.style.Theme_Dialog)
         //avoiding that clicking outside will not close the dialog or update data
         insertDialog.setCancelable(false)
         val dialogBinding = InsertNewLogDialogBinding.inflate(layoutInflater)
