@@ -10,6 +10,7 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlin.coroutines.coroutineContext
 
+// TODO: Modularize this
 class ExcelExportCallback (private val context: Context,
                            private val list: List<LogEntity>,
                            private val vehicle: VehicleEntity) {

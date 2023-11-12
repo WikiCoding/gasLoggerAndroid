@@ -29,7 +29,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.round
 
-//TODO: Fix Dialog theme for dark mode
 class VehicleLogs : BaseActivity() {
     private var binding: ActivityVehicleLogsBinding? = null
     private var list: ArrayList<VehicleWithLogs>? = null
@@ -64,8 +63,6 @@ class VehicleLogs : BaseActivity() {
 
         handleEditSwipe()
         handleDeleteSwipe()
-
-        // TODO: finish the excel export option
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -152,7 +149,7 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun insertLogDialog() {
-        val insertDialog = Dialog(this, R.style.Theme_Dialog)
+        val insertDialog = Dialog(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
         //avoiding that clicking outside will not close the dialog or update data
         insertDialog.setCancelable(false)
         val dialogBinding = InsertNewLogDialogBinding.inflate(layoutInflater)
@@ -169,7 +166,8 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun listenToInsertLogDialogButtons(
-        dialogBinding: InsertNewLogDialogBinding, insertDialog: Dialog) {
+        dialogBinding: InsertNewLogDialogBinding, insertDialog: Dialog
+    ) {
         dialogBinding.tvProceed.setOnClickListener {
             val newLog = setLogObjectFromDialogFields(dialogBinding) ?: return@setOnClickListener
             insertLogToDatabase(newLog)
@@ -229,7 +227,8 @@ class VehicleLogs : BaseActivity() {
         pricePerLiter = dialogBinding.etPricePerLiter.text.toString().toDoubleOrNull()
         logDate = dialogBinding.tvDateCalendar.text.toString()
 
-        val validationResultCode = validateDialogInputFields(actualKm, fuelLiters, pricePerLiter, logDate)
+        val validationResultCode =
+            validateDialogInputFields(actualKm, fuelLiters, pricePerLiter, logDate)
 
         showErrorMessages(validationResultCode)
 
@@ -248,7 +247,8 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun setLogObjectFromEditedDialogFields(
-        dialogBinding: InsertNewLogDialogBinding, selectedLogToEdit: LogEntity): LogEntity? {
+        dialogBinding: InsertNewLogDialogBinding, selectedLogToEdit: LogEntity
+    ): LogEntity? {
         if (dialogBinding.etKm.text.isEmpty()) {
             Toast.makeText(this, "Please provide km input!", Toast.LENGTH_SHORT).show()
             return null
@@ -260,7 +260,13 @@ class VehicleLogs : BaseActivity() {
         logDate = dialogBinding.tvDateCalendar.text.toString()
 
         val validationResultCode =
-            validateEditDialogInputFields(actualKm, fuelLiters, pricePerLiter, logDate, selectedLogToEdit)
+            validateEditDialogInputFields(
+                actualKm,
+                fuelLiters,
+                pricePerLiter,
+                logDate,
+                selectedLogToEdit
+            )
 
         if (validationResultCode < 0) {
             showErrorMessages(validationResultCode)
@@ -276,8 +282,10 @@ class VehicleLogs : BaseActivity() {
         )
     }
 
-    private fun validateDialogInputFields(actualKm: Int?, fuelLiters: Double?,
-                                              pricePerLiter: Double?, logDate: String?): Int {
+    private fun validateDialogInputFields(
+        actualKm: Int?, fuelLiters: Double?,
+        pricePerLiter: Double?, logDate: String?
+    ): Int {
         //no need to check for < 0 condition since I only accept positive numbers in the UI
         if (logsList!!.isNotEmpty()) {
             val providedDate = dateToTimestamp(logDate!!)
@@ -293,9 +301,11 @@ class VehicleLogs : BaseActivity() {
         return 0
     }
 
-    private fun validateEditDialogInputFields(actualKm: Int?, fuelLiters: Double?,
-                                              pricePerLiter: Double?, logDate: String?,
-                                              currentLog: LogEntity): Int {
+    private fun validateEditDialogInputFields(
+        actualKm: Int?, fuelLiters: Double?,
+        pricePerLiter: Double?, logDate: String?,
+        currentLog: LogEntity
+    ): Int {
         //no need to check for < 0 condition since I only accept positive numbers in the UI
         if (actualKm == null) return -1
         if (logsList!!.isEmpty()) {
@@ -317,8 +327,10 @@ class VehicleLogs : BaseActivity() {
             Toast.makeText(this, "Km field can't be empty", Toast.LENGTH_SHORT).show()
         }
         if (validationResultCode == -2) {
-            Toast.makeText(this, "Current Km can't be less than previous value",
-                Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this, "Current Km can't be less than previous value",
+                Toast.LENGTH_SHORT
+            ).show()
         }
         if (validationResultCode == -3) {
             Toast.makeText(this, "Fuel Liters can't be empty", Toast.LENGTH_SHORT).show()
@@ -327,8 +339,10 @@ class VehicleLogs : BaseActivity() {
             Toast.makeText(this, "Price/Liter can't be empty", Toast.LENGTH_SHORT).show()
         }
         if (validationResultCode == -5) {
-            Toast.makeText(this, "The provided date can't be less than the latest date",
-                Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this, "The provided date can't be less than the latest date",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -345,8 +359,7 @@ class VehicleLogs : BaseActivity() {
                 } else {
                     distanceTravelled = actualKm!! - lastFillKm
                 }
-            }
-            else {
+            } else {
                 lastFillKm = logsList!![indexOfCurrentLog + 1].currentKm
                 distanceTravelled = actualKm!! - lastFillKm
             }
@@ -402,9 +415,11 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun listenToEditDialogButtons(
-        dialogBinding: InsertNewLogDialogBinding, logToEdit: LogEntity, editDialog: Dialog) {
+        dialogBinding: InsertNewLogDialogBinding, logToEdit: LogEntity, editDialog: Dialog
+    ) {
         dialogBinding.tvProceed.setOnClickListener {
-            val newLog = setLogObjectFromEditedDialogFields(dialogBinding, logToEdit) ?: return@setOnClickListener
+            val newLog = setLogObjectFromEditedDialogFields(dialogBinding, logToEdit)
+                ?: return@setOnClickListener
             updateLogInDatabase(newLog)
 
             editDialog.dismiss()
@@ -425,7 +440,10 @@ class VehicleLogs : BaseActivity() {
         }
     }
 
-    private fun fillDialogFieldsWhenDialogShows(dialogBinding: InsertNewLogDialogBinding, logToEdit: LogEntity) {
+    private fun fillDialogFieldsWhenDialogShows(
+        dialogBinding: InsertNewLogDialogBinding,
+        logToEdit: LogEntity
+    ) {
         dialogBinding.etPricePerLiter.setText(logToEdit.pricePerLiter.toString())
         dialogBinding.etKm.setText(logToEdit.currentKm.toString())
         dialogBinding.etFuelLiters.setText(logToEdit.fuelLiters.toString())
