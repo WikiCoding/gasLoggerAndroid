@@ -20,7 +20,6 @@ import androidx.lifecycle.lifecycleScope
 import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.databinding.ActivityAddVehicleBinding
 import com.wikicoding.gaslogger.model.VehicleEntity
-import com.wikicoding.gaslogger.utils.CalendarDatesPickerCallback
 import kotlinx.coroutines.launch
 
 open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
@@ -97,8 +96,9 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         val model = binding!!.etModel.text.toString()
         val licensePlate = binding!!.etLicensePlate.text.toString()
         val registrationDate = binding!!.etRegistrationDate.text.toString()
+        val currentKm = binding!!.etKm.text.toString()
 
-        if (!validateForm(make, model, licensePlate, registrationDate)) return -1
+        if (!validateVehicleForm(currentKm, make, model, licensePlate, registrationDate)) return -1
         val km = Integer.parseInt(binding!!.etKm.text.toString())
 
         val vehicle =
@@ -108,34 +108,6 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
             dao.addVehicle(vehicle)
         }
         return 0
-    }
-
-    private fun validateForm(make: String, model: String, licensePlate: String, registrationDate: String): Boolean {
-        val km: Int
-        try {
-            km = Integer.parseInt(binding!!.etKm.text.toString())
-        } catch (e: NumberFormatException) {
-            Toast.makeText(
-                applicationContext, "Problem when converting km value",
-                Toast.LENGTH_SHORT
-            ).show()
-            return false
-        }
-
-        if (make.isEmpty() || model.isEmpty() || km < 0 || km > 1000000 || licensePlate.isEmpty()) {
-            Toast.makeText(
-                applicationContext, "You need to fill in all the forms correctly",
-                Toast.LENGTH_SHORT
-            ).show()
-            return false
-        }
-
-        val registrationDateLong = dateToTimestamp(registrationDate)
-        println(registrationDateLong)
-        println(System.currentTimeMillis())
-        if (registrationDateLong > System.currentTimeMillis()) return false
-
-        return true
     }
 
     private fun pictureDialog() {

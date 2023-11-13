@@ -103,48 +103,14 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         return super.onContextItemSelected(item)
     }
 
-    private fun validateForm(make: String, model: String, licensePlateEdit: String,
-                             registrationDateEdit: String): Boolean {
-        val km: Int
-        try {
-            km = Integer.parseInt(binding!!.etKmEdit.text.toString())
-        } catch (e: NumberFormatException) {
-            Toast.makeText(
-                applicationContext, "Problem when converting km value",
-                Toast.LENGTH_SHORT
-            ).show()
-            return false
-        }
-
-        if (make.isEmpty() || model.isEmpty() || km < 0 || km > 1000000 || licensePlateEdit.isEmpty()) {
-            Toast.makeText(
-                applicationContext, "You need to fill in all the forms correctly",
-                Toast.LENGTH_SHORT
-            ).show()
-            return false
-        }
-
-        val registrationDateLong = dateToTimestamp(registrationDateEdit)
-
-        if (registrationDateLong > System.currentTimeMillis()) {
-            Toast.makeText(
-                applicationContext, "Registration date can't be a date in the future",
-                Toast.LENGTH_SHORT
-            ).show()
-            return false
-        }
-
-        return true
-    }
-
     private fun setupUpdatedForm(): VehicleEntity? {
         val makeEdit = binding!!.etMakeEdit.text.toString()
         val modelEdit = binding!!.etModelEdit.text.toString()
         val licensePlateEdit = binding!!.etLicensePlate.text.toString()
         val registrationDateEdit = binding!!.etRegistrationDate.text.toString()
+        val currentKm = binding!!.etKmEdit.text.toString()
 
-        if (!validateForm(makeEdit, modelEdit, licensePlateEdit, registrationDateEdit)) return null;
-
+        if (!validateVehicleForm(currentKm, makeEdit, modelEdit, licensePlateEdit, registrationDateEdit)) return null;
         val kmEdit = Integer.parseInt(binding!!.etKmEdit.text.toString())
 
         val imageEdit: String = if (!pictureIsChanged) currentVehicle!!.image

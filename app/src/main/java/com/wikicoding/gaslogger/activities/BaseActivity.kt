@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.EditText
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.adapter.LogsAdapter
@@ -177,6 +178,63 @@ open class BaseActivity : AppCompatActivity() {
             vehiclesList!!.remove(vehicle)
             vehiclesAdapter!!.notifyItemRemoved(position)
         }
+    }
+
+    fun validateVehicleForm(currentKm: String, make: String, model: String, licensePlate: String,
+                                    registrationDate: String): Boolean {
+        val km: Int
+        try {
+            km = Integer.parseInt(currentKm)
+        } catch (e: NumberFormatException) {
+            Toast.makeText(
+                applicationContext, "Problem when converting km value",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
+        if (make.isEmpty()) {
+            Toast.makeText(
+                applicationContext, "You need to fill in the vehicle's make.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
+        if (model.isEmpty()) {
+            Toast.makeText(
+                applicationContext, "You need to fill in the vehicle's model.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
+        if (km < 0 || km > 5000000) {
+            Toast.makeText(
+                applicationContext, "Vehicle can't have negative km or more than 5000000Km.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
+        if (licensePlate.isEmpty()) {
+            Toast.makeText(
+                applicationContext, "You need to fill in the vehicle's license plate.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
+        val registrationDateLong = dateToTimestamp(registrationDate)
+        if (registrationDateLong > System.currentTimeMillis()) {
+            Toast.makeText(
+                applicationContext, "Registration date can't be a future date.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
+        return true
     }
 
     companion object {
