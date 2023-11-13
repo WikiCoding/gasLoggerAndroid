@@ -1,6 +1,5 @@
 package com.wikicoding.gaslogger.activities
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -17,7 +16,6 @@ import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.adapter.VehiclesAdapter
 import com.wikicoding.gaslogger.constants.Constants
 import com.wikicoding.gaslogger.databinding.ActivityMainBinding
-import com.wikicoding.gaslogger.databinding.DeleteConfirmationDialogBinding
 import com.wikicoding.gaslogger.model.VehicleEntity
 import kotlinx.coroutines.launch
 import java.io.Serializable
@@ -33,9 +31,6 @@ class MainActivity : BaseActivity() {
         setContentView(binding!!.root)
 
         title = "Vehicles List"
-
-        /** disabling night mode **/
-        //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         fetchAllVehicles()
 
@@ -62,7 +57,9 @@ class MainActivity : BaseActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val rvAdapter = binding!!.rvVehicles.adapter as VehiclesAdapter
                 val itemToDelete = rvAdapter.findSwipedItem(viewHolder.adapterPosition)
-                deleteConfirmationDialog(itemToDelete, viewHolder.adapterPosition)
+                deleteConfirmationDialog(this@MainActivity, itemToDelete,
+                    vehiclesList!!, null, null, adapter,
+                    null, viewHolder.adapterPosition)
             }
         }
 
@@ -98,14 +95,6 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private fun deleteVehicle(vehicle: VehicleEntity, position: Int) {
-        lifecycleScope.launch {
-            dao.deleteVehicle(vehicle)
-            vehiclesList!!.remove(vehicle)
-            adapter!!.notifyItemRemoved(position)
-        }
-    }
-
     private fun vehiclesRecyclerViewSetup(vehicleEntityList: ArrayList<VehicleEntity>) {
         adapter = VehiclesAdapter(vehicleEntityList)
         binding!!.rvVehicles.layoutManager = LinearLayoutManager(this)
@@ -127,25 +116,6 @@ class MainActivity : BaseActivity() {
                 startActivity(intent)
             }
         })
-    }
-
-    private fun deleteConfirmationDialog(vehicle: VehicleEntity, position: Int) {
-        val deleteConfirmationDialog = Dialog(this, R.style.Theme_Dialog)
-        //avoiding that clicking outside will not close the dialog or update data
-        deleteConfirmationDialog.setCancelable(false)
-        val dialogBinding = DeleteConfirmationDialogBinding.inflate(layoutInflater)
-        deleteConfirmationDialog.setContentView(dialogBinding.root)
-        deleteConfirmationDialog.show()
-
-        dialogBinding.tvProceed.setOnClickListener {
-            deleteVehicle(vehicle, position)
-            deleteConfirmationDialog.dismiss()
-        }
-
-        dialogBinding.tvCancel.setOnClickListener {
-            deleteConfirmationDialog.dismiss()
-            fetchAllVehicles()
-        }
     }
 
     override fun onResume() {

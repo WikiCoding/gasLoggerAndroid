@@ -1,6 +1,7 @@
 package com.wikicoding.gaslogger.activities
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.ContextWrapper
@@ -12,9 +13,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.EditText
+import androidx.lifecycle.lifecycleScope
+import com.wikicoding.gaslogger.R
+import com.wikicoding.gaslogger.adapter.LogsAdapter
+import com.wikicoding.gaslogger.adapter.VehiclesAdapter
 import com.wikicoding.gaslogger.dao.GasLoggerApp
 import com.wikicoding.gaslogger.dao.GasLoggerDao
+import com.wikicoding.gaslogger.databinding.DeleteConfirmationDialogBinding
+import com.wikicoding.gaslogger.model.LogEntity
+import com.wikicoding.gaslogger.model.VehicleEntity
 import com.wikicoding.gaslogger.utils.CalendarDatesPickerCallback
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -22,13 +31,13 @@ import java.io.OutputStream
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 open class BaseActivity : AppCompatActivity() {
     lateinit var dao: GasLoggerDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         dao = (application as GasLoggerApp).db.gasLoggerDao()
     }
 
@@ -94,65 +103,83 @@ open class BaseActivity : AppCompatActivity() {
         calendarDatePicker.setCurrentDate()
         calendarDatePicker.listenToDateInputClick()
     }
-//
-//    // Declare a contract to get a result from another activity.
-//    val activityCameraLauncher =
-//        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//            if (result.resultCode == Activity.RESULT_OK) {
-//                val resultFromActivity = result.data?.extras?.get("data") as Bitmap
-//
-//                vehicleImageUri = saveImageToInternalStorage(resultFromActivity)
-//            } else {
-//                Toast.makeText(this, "Error getting image from camera", Toast.LENGTH_SHORT)
-//                    .show()
-//            }
-//        }
-//
-//    val activityGalleryLauncher =
-//        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//            if (result.resultCode == Activity.RESULT_OK) {
-//                val resultFromActivity = result.data?.data as Uri
-//
-//                val imageBitmap = convertUriToBitmap(resultFromActivity, this)
-//                if (imageBitmap != null) {
-//                    vehicleImageUri = saveImageToInternalStorage(imageBitmap)
-//                } else {
-//                    Toast.makeText(this, "Error getting image from gallery", Toast.LENGTH_SHORT)
-//                        .show()
-//                }
-//            }
-//        }
-//
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        if (requestCode == CAMERA_PERMISSION_CODE) {
-//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//                activityCameraLauncher.launch(intent)
-//            } else {
-//                showRationalDialogForPermissions()
-//            }
-//        }
-//        if (requestCode == READ_EXTERNAL_STORAGE_CODE) {
-//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                val galleryIntent = Intent(
-//                    Intent.ACTION_PICK,
-//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-//                )
-//                activityGalleryLauncher.launch(galleryIntent)
-//            } else {
-//                showRationalDialogForPermissions()
-//            }
-//        }
-//    }
+
+    fun deleteConfirmationDialog(context: Context, vehicle: VehicleEntity?,
+                                 vehiclesList: ArrayList<VehicleEntity>?, log: LogEntity?,
+                                 logsList: ArrayList<LogEntity>?, vehiclesAdapter: VehiclesAdapter?,
+                                 logsAdapter: LogsAdapter?, position: Int) {
+        val (deleteConfirmationDialog, dialogBinding) = createShowDeleteDialog(context)
+
+        handleDeleteDialogProceedClick(dialogBinding, context, vehicle, vehiclesList, vehiclesAdapter,
+            position, log, logsList, logsAdapter, deleteConfirmationDialog)
+
+        handleDeleteDialogCancelClick(dialogBinding, deleteConfirmationDialog, context, vehiclesAdapter,
+            logsAdapter)
+    }
+
+    private fun createShowDeleteDialog(context: Context): Pair<Dialog, DeleteConfirmationDialogBinding> {
+        val deleteConfirmationDialog = Dialog(context, R.style.Theme_Dialog)
+        //avoiding that clicking outside will not close the dialog or update data
+        deleteConfirmationDialog.setCancelable(false)
+        val dialogBinding = DeleteConfirmationDialogBinding.inflate(layoutInflater)
+        deleteConfirmationDialog.setContentView(dialogBinding.root)
+        deleteConfirmationDialog.show()
+        return Pair(deleteConfirmationDialog, dialogBinding)
+    }
+
+    private fun handleDeleteDialogCancelClick(
+        dialogBinding: DeleteConfirmationDialogBinding,
+        deleteConfirmationDialog: Dialog,
+        context: Context,
+        vehiclesAdapter: VehiclesAdapter?,
+        logsAdapter: LogsAdapter?
+    ) {
+        dialogBinding.tvCancel.setOnClickListener {
+            deleteConfirmationDialog.dismiss()
+            if (context is MainActivity) {
+                vehiclesAdapter!!.notifyDataSetChanged()
+            } else {
+                logsAdapter!!.notifyDataSetChanged()
+            }
+        }
+    }
+
+    private fun handleDeleteDialogProceedClick(dialogBinding: DeleteConfirmationDialogBinding,
+                                               context: Context, vehicle: VehicleEntity?,
+                                               vehiclesList: ArrayList<VehicleEntity>?,
+                                               vehiclesAdapter: VehiclesAdapter?, position: Int,
+                                               log: LogEntity?, logsList: ArrayList<LogEntity>?,
+                                               logsAdapter: LogsAdapter?,
+                                               deleteConfirmationDialog: Dialog) {
+        dialogBinding.tvProceed.setOnClickListener {
+            if (context is MainActivity) {
+                proceedDeletingVehicle(vehicle!!, vehiclesList!!, vehiclesAdapter!!, position)
+            } else {
+                proceedDeletingLog(log, logsList, logsAdapter, position)
+            }
+            deleteConfirmationDialog.dismiss()
+        }
+    }
+
+    private fun proceedDeletingLog(log: LogEntity?, logsList: ArrayList<LogEntity>?,
+                                   logsAdapter: LogsAdapter?, position: Int) {
+        lifecycleScope.launch {
+            dao.deleteLog(log!!)
+            logsList!!.remove(log)
+            logsAdapter!!.notifyItemRemoved(position)
+        }
+    }
+
+    private fun proceedDeletingVehicle(vehicle: VehicleEntity?, vehiclesList: ArrayList<VehicleEntity>?,
+                                       vehiclesAdapter: VehiclesAdapter?, position: Int) {
+        lifecycleScope.launch {
+            dao.deleteVehicle(vehicle!!)
+            vehiclesList!!.remove(vehicle)
+            vehiclesAdapter!!.notifyItemRemoved(position)
+        }
+    }
 
     companion object {
         private const val IMAGE_DIRECTORY = "GasLogImages"
-//        private const val CAMERA_PERMISSION_CODE = 1
-//        private const val READ_EXTERNAL_STORAGE_CODE = 2
     }
 }

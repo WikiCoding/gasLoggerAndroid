@@ -29,7 +29,7 @@ import kotlin.math.round
 class VehicleLogs : BaseActivity() {
     private var binding: ActivityVehicleLogsBinding? = null
     private var list: ArrayList<VehicleWithLogs>? = null
-    private var logsList: List<LogEntity>? = null
+    private var logsList: ArrayList<LogEntity>? = null
     private var currentVehicle: VehicleEntity? = null
     private var actualKm: Int? = null
     private var fuelLiters: Double? = null
@@ -113,7 +113,7 @@ class VehicleLogs : BaseActivity() {
             if (list!![0].logs.isNotEmpty()) {
                 sortLogsListByKmDESC()
             } else {
-                logsList = listOf()
+                logsList = arrayListOf()
             }
 
             setupLogsRecyclerView(logsList!!)
@@ -121,9 +121,9 @@ class VehicleLogs : BaseActivity() {
     }
 
     private fun sortLogsListByKmDESC() {
-        logsList = list!![0].logs
+        logsList = list!![0].logs as ArrayList<LogEntity>
 
-        (logsList as ArrayList<LogEntity>).sortWith { log1, log2 ->
+        logsList!!.sortWith { log1, log2 ->
             val km1 = log1.currentKm
             val km2 = log2.currentKm
             when {
@@ -425,38 +425,13 @@ class VehicleLogs : BaseActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val rvAdapter = binding!!.rvLogs.adapter as LogsAdapter
                 val itemToDelete: LogEntity = rvAdapter.findSwipedItem(viewHolder.adapterPosition)
-                deleteConfirmationDialog(itemToDelete)
+                deleteConfirmationDialog(this@VehicleLogs, null, null,
+                    itemToDelete, logsList!!, null, adapter, viewHolder.adapterPosition)
             }
         }
 
         val deleteItemTouchHandler = ItemTouchHelper(deleteSwipeHandler)
         deleteItemTouchHandler.attachToRecyclerView(binding!!.rvLogs)
-    }
-
-    private fun deleteLog(log: LogEntity) {
-        lifecycleScope.launch {
-            dao.deleteLog(log)
-            getLogs(currentVehicle!!.idVehicle)
-        }
-    }
-
-    private fun deleteConfirmationDialog(log: LogEntity) {
-        val deleteConfirmationDialog = Dialog(this, R.style.Theme_Dialog)
-        //avoiding that clicking outside will not close the dialog or update data
-        deleteConfirmationDialog.setCancelable(false)
-        val dialogBinding = DeleteConfirmationDialogBinding.inflate(layoutInflater)
-        deleteConfirmationDialog.setContentView(dialogBinding.root)
-        deleteConfirmationDialog.show()
-
-        dialogBinding.tvProceed.setOnClickListener {
-            deleteLog(log)
-            deleteConfirmationDialog.dismiss()
-        }
-
-        dialogBinding.tvCancel.setOnClickListener {
-            deleteConfirmationDialog.dismiss()
-            getLogs(currentVehicle!!.idVehicle)
-        }
     }
 
     override fun onDestroy() {
