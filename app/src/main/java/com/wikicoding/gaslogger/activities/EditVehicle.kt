@@ -47,8 +47,6 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     private var editedVehicle: VehicleEntity? = null
     private var pictureIsChanged: Boolean = false
     private var vehicleImageUri: Uri? = null
-    private var calendar = Calendar.getInstance()
-    private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,32 +63,6 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         handleImageClick()
 
         handleSaveUpdatesBtnClick()
-    }
-
-    private fun setCurrentDate() {
-        val myFormat = "dd-MM-yyyy"
-        val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
-        binding!!.etRegistrationDate.setText(sdf.format(calendar.time).toString())
-    }
-
-    private fun getDates() {
-        dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, month)
-            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            setCurrentDate()
-        }
-        setCurrentDate()
-    }
-
-    private fun listenToDateInputClick() {
-        binding!!.etRegistrationDate.setOnClickListener {
-            DatePickerDialog(
-                this@EditVehicle, dateSetListener,
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
-        }
     }
 
     private fun handleSaveUpdatesBtnClick() {
@@ -191,9 +163,7 @@ class EditVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         binding!!.etKmEdit.setText(currentVehicle?.startKm.toString())
         binding!!.etLicensePlate.setText(currentVehicle?.licensePlate)
         setupFuelTypeDropdownMenu()
-        getDates()
-        setCurrentDate()
-        listenToDateInputClick()
+        getCalendarDatePickerCallback(this, binding!!.etRegistrationDate)
     }
 
     private fun setupFuelTypeDropdownMenu() {

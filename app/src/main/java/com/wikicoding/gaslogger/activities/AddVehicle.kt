@@ -3,7 +3,6 @@ package com.wikicoding.gaslogger.activities
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -20,18 +19,14 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.databinding.ActivityAddVehicleBinding
-import com.wikicoding.gaslogger.databinding.InsertNewLogDialogBinding
 import com.wikicoding.gaslogger.model.VehicleEntity
+import com.wikicoding.gaslogger.utils.CalendarDatesPickerCallback
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
     private var binding: ActivityAddVehicleBinding? = null
     private var fuelType: String? = null
     private var vehicleImageUri: Uri? = null
-    private var calendar = Calendar.getInstance()
-    private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,40 +36,13 @@ open class AddVehicle : BaseActivity(), AdapterView.OnItemSelectedListener {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.title = "Add Vehicle"
 
-        getDates()
-        setCurrentDate()
-        listenToDateInputClick()
+        getCalendarDatePickerCallback(this, binding!!.etRegistrationDate)
 
         setupFuelTypeDropdownMenu()
 
         handleImageClick()
 
         handleSaveBtnClick()
-    }
-
-    private fun setCurrentDate() {
-        val myFormat = "dd-MM-yyyy"
-        val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
-        binding!!.etRegistrationDate.setText(sdf.format(calendar.time).toString())
-    }
-
-    private fun getDates() {
-        dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, month)
-            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            setCurrentDate()
-        }
-    }
-
-    private fun listenToDateInputClick() {
-        binding!!.etRegistrationDate.setOnClickListener {
-            DatePickerDialog(
-                this@AddVehicle, dateSetListener,
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
-        }
     }
 
     private fun handleSaveBtnClick() {

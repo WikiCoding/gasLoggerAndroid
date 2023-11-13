@@ -1,6 +1,5 @@
 package com.wikicoding.gaslogger.activities
 
-import android.app.DatePickerDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.view.Menu
@@ -24,8 +23,6 @@ import com.wikicoding.gaslogger.model.VehicleEntity
 import com.wikicoding.gaslogger.model.relations.VehicleWithLogs
 import com.wikicoding.gaslogger.utils.ExcelExportCallback
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.round
 
@@ -34,8 +31,6 @@ class VehicleLogs : BaseActivity() {
     private var list: ArrayList<VehicleWithLogs>? = null
     private var logsList: List<LogEntity>? = null
     private var currentVehicle: VehicleEntity? = null
-    private var calendar = Calendar.getInstance()
-    private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
     private var actualKm: Int? = null
     private var fuelLiters: Double? = null
     private var pricePerLiter: Double? = null
@@ -139,24 +134,19 @@ class VehicleLogs : BaseActivity() {
         }
     }
 
-    private fun setDateInDialogWhenShows(dialogBinding: InsertNewLogDialogBinding) {
-        val myFormat = "dd-MM-yyyy"
-        val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
-        dialogBinding.tvDateCalendar.setText(sdf.format(calendar.time).toString())
-    }
-
     private fun insertLogDialog() {
         val insertDialog = Dialog(this, R.style.Theme_Dialog)
         //avoiding that clicking outside will not close the dialog or update data
         insertDialog.setCancelable(false)
         val dialogBinding = InsertNewLogDialogBinding.inflate(layoutInflater)
         insertDialog.setContentView(dialogBinding.root)
-        getDates(dialogBinding)
+
+        getCalendarDatePickerCallback(this@VehicleLogs, dialogBinding.tvDateCalendar)
+
         insertDialog.show()
 
         if (partialFillUpCheckBox) dialogBinding.checkboxPartialFillUp.isChecked = true
 
-        listenToDateInputClick(dialogBinding)
         listenToCheckBoxChanges(dialogBinding)
 
         listenToInsertLogDialogButtons(dialogBinding, insertDialog)
@@ -177,28 +167,6 @@ class VehicleLogs : BaseActivity() {
         dialogBinding.tvCancel.setOnClickListener {
             insertDialog.dismiss()
             partialFillUpCheckBox = false
-        }
-    }
-
-    private fun getDates(dialogBinding: InsertNewLogDialogBinding) {
-        dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, month)
-            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            setDateInDialogWhenShows(dialogBinding)
-        }
-
-        /** to fill automatically when opening the activity**/
-        setDateInDialogWhenShows(dialogBinding)
-    }
-
-    private fun listenToDateInputClick(dialogBinding: InsertNewLogDialogBinding) {
-        dialogBinding.tvDateCalendar.setOnClickListener {
-            DatePickerDialog(
-                this@VehicleLogs, dateSetListener,
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
         }
     }
 
@@ -400,12 +368,12 @@ class VehicleLogs : BaseActivity() {
         val dialogBinding = InsertNewLogDialogBinding.inflate(layoutInflater)
         editDialog.setContentView(dialogBinding.root)
 
-        getDates(dialogBinding)
+        getCalendarDatePickerCallback(this@VehicleLogs, dialogBinding.tvDateCalendar)
+
         fillDialogFieldsWhenDialogShows(dialogBinding, logToEdit)
 
         editDialog.show()
 
-        listenToDateInputClick(dialogBinding)
         listenToCheckBoxChanges(dialogBinding)
 
         listenToEditDialogButtons(dialogBinding, logToEdit, editDialog)

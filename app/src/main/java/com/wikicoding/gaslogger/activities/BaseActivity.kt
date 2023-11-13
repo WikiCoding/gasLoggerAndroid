@@ -1,8 +1,6 @@
 package com.wikicoding.gaslogger.activities
 
-import android.R
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.ContextWrapper
@@ -13,12 +11,10 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
-import androidx.lifecycle.lifecycleScope
+import android.widget.EditText
 import com.wikicoding.gaslogger.dao.GasLoggerApp
 import com.wikicoding.gaslogger.dao.GasLoggerDao
-import com.wikicoding.gaslogger.databinding.DeleteConfirmationDialogBinding
-import com.wikicoding.gaslogger.model.LogEntity
-import kotlinx.coroutines.launch
+import com.wikicoding.gaslogger.utils.CalendarDatesPickerCallback
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -26,11 +22,9 @@ import java.io.OutputStream
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 open class BaseActivity : AppCompatActivity() {
     lateinit var dao: GasLoggerDao
-//    var vehicleImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +86,13 @@ open class BaseActivity : AppCompatActivity() {
         val dateFormat = SimpleDateFormat("dd-MM-yyyy")
         val date = dateFormat.parse(dateString)
         return date?.time ?: 0L
+    }
+
+    fun getCalendarDatePickerCallback(context: Context, calendarInputField: EditText) {
+        val calendarDatePicker = CalendarDatesPickerCallback(context, calendarInputField)
+        calendarDatePicker.getDates()
+        calendarDatePicker.setCurrentDate()
+        calendarDatePicker.listenToDateInputClick()
     }
 //
 //    // Declare a contract to get a result from another activity.
