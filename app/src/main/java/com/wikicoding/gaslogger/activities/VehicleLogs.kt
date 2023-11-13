@@ -16,12 +16,11 @@ import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.adapter.LogsAdapter
 import com.wikicoding.gaslogger.constants.Constants
 import com.wikicoding.gaslogger.databinding.ActivityVehicleLogsBinding
-import com.wikicoding.gaslogger.databinding.DeleteConfirmationDialogBinding
 import com.wikicoding.gaslogger.databinding.InsertNewLogDialogBinding
 import com.wikicoding.gaslogger.model.LogEntity
 import com.wikicoding.gaslogger.model.VehicleEntity
 import com.wikicoding.gaslogger.model.relations.VehicleWithLogs
-import com.wikicoding.gaslogger.utils.ExcelExportCallback
+import com.wikicoding.gaslogger.utils.LogsExcelExportCallback
 import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
 import kotlin.math.round
@@ -42,7 +41,7 @@ class VehicleLogs : BaseActivity() {
     private var fuelConsumptionPer100Km = 0.0
     private var fillUpCost = 0.0
     private var previousLogDate = ""
-    private lateinit var excelCallback: ExcelExportCallback
+    private lateinit var logsExcelCallback: LogsExcelExportCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,8 +71,8 @@ class VehicleLogs : BaseActivity() {
             }
             R.id.mi_add_log -> insertLogDialog()
             R.id.mi_export_excel -> {
-                excelCallback = ExcelExportCallback(this, logsList!!, currentVehicle!!)
-                excelCallback.exportExcel()
+                logsExcelCallback = LogsExcelExportCallback(this, logsList!!, currentVehicle!!)
+                logsExcelCallback.exportExcel()
             }
         }
         return true

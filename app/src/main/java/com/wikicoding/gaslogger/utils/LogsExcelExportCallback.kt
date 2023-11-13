@@ -1,42 +1,55 @@
 package com.wikicoding.gaslogger.utils
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import com.wikicoding.gaslogger.model.LogEntity
 import com.wikicoding.gaslogger.model.VehicleEntity
+import org.apache.poi.hssf.usermodel.HSSFRow
+import org.apache.poi.hssf.usermodel.HSSFSheet
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.coroutines.coroutineContext
 
-// TODO: Modularize this
-class ExcelExportCallback (private val context: Context,
-                           private val list: List<LogEntity>,
-                           private val vehicle: VehicleEntity) {
+class LogsExcelExportCallback (private val context: Context,
+                               private val list: List<LogEntity>,
+                               private val vehicle: VehicleEntity) {
+    private lateinit var row: HSSFRow
+    private lateinit var sheet: HSSFSheet
+
     fun exportExcel() {
         /** creating workbook and sheet **/
         val workbook = HSSFWorkbook()
-        val sheet = workbook.createSheet(WORKBOOK_NAME)
+        sheet = workbook.createSheet(WORKBOOK_NAME)
 
         /** writing the data to the sheet **/
-        var row = sheet.createRow(0)
-        row.createCell(0).setCellValue(COLUMN_ID)
-        row.createCell(1).setCellValue(COLUMN_CURRENT_KM)
-        row.createCell(2).setCellValue(COLUMN_LOG_DATE)
-        row.createCell(3).setCellValue(COLUMN_FUEL_LITERS)
-        row.createCell(4).setCellValue(COLUMN_PRICE_PER_LITER)
-        row.createCell(5).setCellValue(COLUMN_PARTIAL_FILL_UP)
-        row.createCell(6).setCellValue(COLUMN_LAST_FILL_KM)
-        row.createCell(7).setCellValue(COLUMN_DISTANCE_TRAVELLED)
-        row.createCell(8).setCellValue(COLUMN_FUEL_CONSUMPTION)
-        row.createCell(9).setCellValue(COLUMN_FILL_UP_COST)
-        row.createCell(10).setCellValue(COLUMN_VEHICLE_ID)
-        row.createCell(11).setCellValue(COLUMN_VEHICLE_MAKE)
-        row.createCell(12).setCellValue(COLUMN_VEHICLE_MODEL)
-        row.createCell(13).setCellValue(COLUMN_VEHICLE_LICENSE_PLATE)
+        row = sheet.createRow(0)
+        createExcelColumns()
 
         // filling up rows with data
+        fillColumnsWithCurrentData()
+
+        /** Saving the data to a file **/
+        val exportDir = context.getExternalFilesDir(null)
+
+        if (!exportDir!!.exists()) {
+            exportDir.mkdirs()
+        }
+
+        val file = File(exportDir, "LogsFrom_${vehicle.make}_${vehicle.model}_${vehicle.licensePlate}.xls")
+
+        try {
+            val outputStream = FileOutputStream(file)
+            workbook.write(outputStream)
+            workbook.close()
+            outputStream.close()
+            Toast.makeText(context, "Exported to ${exportDir.absolutePath}", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "There was an error: $e", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
+        }
+    }
+
+    private fun fillColumnsWithCurrentData() {
         for (i in list.indices) {
             val log = list[i]
             row = sheet.createRow(i + 1)
@@ -55,32 +68,23 @@ class ExcelExportCallback (private val context: Context,
             row.createCell(12).setCellValue(vehicle.model)
             row.createCell(13).setCellValue(vehicle.licensePlate)
         }
+    }
 
-        /** Saving the data to a file **/
-        //val exportDir = File(Environment.getStorageDirectory(), "TasksAppData")
-        val exportDir = context.getExternalFilesDir(null)
-
-        // TODO: Delete this
-        Log.e("Storage", exportDir!!.absolutePath)
-        Log.e("List", list.toString())
-
-
-        if (!exportDir.exists()) {
-            exportDir.mkdirs()
-        }
-
-        val file = File(exportDir, "LogsFrom_${vehicle.make}_${vehicle.model}_${vehicle.licensePlate}.xls")
-        Log.e("Storage", file.toString())
-        try {
-            val outputStream = FileOutputStream(file)
-            workbook.write(outputStream)
-            workbook.close()
-            outputStream.close()
-            Toast.makeText(context, "Exported to ${exportDir.absolutePath}", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            Toast.makeText(context, "There was an error: $e", Toast.LENGTH_LONG).show()
-            e.printStackTrace()
-        }
+    private fun createExcelColumns() {
+        row.createCell(0).setCellValue(COLUMN_ID)
+        row.createCell(1).setCellValue(COLUMN_CURRENT_KM)
+        row.createCell(2).setCellValue(COLUMN_LOG_DATE)
+        row.createCell(3).setCellValue(COLUMN_FUEL_LITERS)
+        row.createCell(4).setCellValue(COLUMN_PRICE_PER_LITER)
+        row.createCell(5).setCellValue(COLUMN_PARTIAL_FILL_UP)
+        row.createCell(6).setCellValue(COLUMN_LAST_FILL_KM)
+        row.createCell(7).setCellValue(COLUMN_DISTANCE_TRAVELLED)
+        row.createCell(8).setCellValue(COLUMN_FUEL_CONSUMPTION)
+        row.createCell(9).setCellValue(COLUMN_FILL_UP_COST)
+        row.createCell(10).setCellValue(COLUMN_VEHICLE_ID)
+        row.createCell(11).setCellValue(COLUMN_VEHICLE_MAKE)
+        row.createCell(12).setCellValue(COLUMN_VEHICLE_MODEL)
+        row.createCell(13).setCellValue(COLUMN_VEHICLE_LICENSE_PLATE)
     }
 
     companion object {
