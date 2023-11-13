@@ -1,7 +1,9 @@
 package com.wikicoding.gaslogger.utils
 
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import com.wikicoding.gaslogger.model.LogEntity
 import com.wikicoding.gaslogger.model.VehicleEntity
 import org.apache.poi.hssf.usermodel.HSSFRow
@@ -15,10 +17,12 @@ class LogsExcelExportCallback (private val context: Context,
                                private val vehicle: VehicleEntity) {
     private lateinit var row: HSSFRow
     private lateinit var sheet: HSSFSheet
+    private lateinit var exportDir: File
+    private lateinit var workbook: HSSFWorkbook
 
     fun exportExcel() {
         /** creating workbook and sheet **/
-        val workbook = HSSFWorkbook()
+        workbook = HSSFWorkbook()
         sheet = workbook.createSheet(WORKBOOK_NAME)
 
         /** writing the data to the sheet **/
@@ -29,20 +33,26 @@ class LogsExcelExportCallback (private val context: Context,
         fillColumnsWithCurrentData()
 
         /** Saving the data to a file **/
-        val exportDir = context.getExternalFilesDir(null)
+        saveExcelToDirectory(context)
+    }
 
-        if (!exportDir!!.exists()) {
+    private fun saveExcelToDirectory(context: Context) {
+        exportDir = context.getExternalFilesDir(null)!!
+
+        if (!exportDir.exists()) {
             exportDir.mkdirs()
         }
 
-        val file = File(exportDir, "LogsFrom_${vehicle.make}_${vehicle.model}_${vehicle.licensePlate}.xls")
+        val file =
+            File(exportDir, "LogsFrom_${vehicle.make}_${vehicle.model}_${vehicle.licensePlate}.xls")
 
         try {
             val outputStream = FileOutputStream(file)
             workbook.write(outputStream)
             workbook.close()
             outputStream.close()
-            Toast.makeText(context, "Exported to ${exportDir.absolutePath}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Exported to ${exportDir.absolutePath}", Toast.LENGTH_LONG)
+                .show()
         } catch (e: Exception) {
             Toast.makeText(context, "There was an error: $e", Toast.LENGTH_LONG).show()
             e.printStackTrace()
