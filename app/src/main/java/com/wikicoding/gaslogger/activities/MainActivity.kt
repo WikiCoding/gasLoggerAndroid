@@ -1,29 +1,35 @@
 package com.wikicoding.gaslogger.activities
 
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.wikicoding.explorelog.utils.SwipeToDeleteCallback
 import com.wikicoding.explorelog.utils.SwipeToEditCallback
+import com.wikicoding.gaslogger.BuildConfig
 import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.adapter.VehiclesAdapter
 import com.wikicoding.gaslogger.constants.Constants
 import com.wikicoding.gaslogger.databinding.ActivityMainBinding
 import com.wikicoding.gaslogger.model.VehicleEntity
+import com.wikicoding.gaslogger.utils.VehiclesExcelExportCallback
 import kotlinx.coroutines.launch
+import java.io.File
 import java.io.Serializable
 
 class MainActivity : BaseActivity() {
     private var binding: ActivityMainBinding? = null
     private var vehiclesList: ArrayList<VehicleEntity>? = null
     private var adapter: VehiclesAdapter? = null
+    private var excelFile: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,14 +46,15 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.app_bar_menu_logs, menu)
+        menuInflater.inflate(R.menu.app_bar_menu_vehicles, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
-            R.id.mi_add_log -> handleAddVehicleClick()
-            R.id.mi_export_excel -> Toast.makeText(this, "not yet developed", Toast.LENGTH_SHORT).show()
+        when (item.itemId) {
+            R.id.mi_add_vehicle -> handleAddVehicleClick()
+            R.id.mi_vehicle_export_excel -> exportVehiclesToExcel()
+            R.id.mi_send_excel_by_email -> handleSendByEmailClick()
         }
         return true
     }
@@ -57,9 +64,11 @@ class MainActivity : BaseActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val rvAdapter = binding!!.rvVehicles.adapter as VehiclesAdapter
                 val itemToDelete = rvAdapter.findSwipedItem(viewHolder.adapterPosition)
-                deleteConfirmationDialog(this@MainActivity, itemToDelete,
+                deleteConfirmationDialog(
+                    this@MainActivity, itemToDelete,
                     vehiclesList!!, null, null, adapter,
-                    null, viewHolder.adapterPosition)
+                    null, viewHolder.adapterPosition
+                )
             }
         }
 
@@ -84,8 +93,8 @@ class MainActivity : BaseActivity() {
     }
 
     private fun handleAddVehicleClick() {
-            val intent = Intent(this, AddVehicle::class.java)
-            startActivity(intent)
+        val intent = Intent(this, AddVehicle::class.java)
+        startActivity(intent)
     }
 
     private fun fetchAllVehicles() {
@@ -116,6 +125,33 @@ class MainActivity : BaseActivity() {
                 startActivity(intent)
             }
         })
+    }
+
+    private fun exportVehiclesToExcel() {
+        val exportVehiclesExcel = VehiclesExcelExportCallback(this@MainActivity, vehiclesList!!)
+        excelFile = exportVehiclesExcel.exportExcel()
+    }
+
+    private fun handleSendByEmailClick() {
+        exportVehiclesToExcel()
+        val intent = Intent(Intent.ACTION_SEND)
+        /** specifying which type of content I'm sending **/
+        intent.type = "application/octet-stream"
+        val fileUri = FileProvider.getUriForFile(this,
+            "${BuildConfig.APPLICATION_ID}.provider", excelFile!!)
+        /** passing data to the intent **/
+        intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(""))
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Your vehicles list @gasLogger.")
+        intent.putExtra(Intent.EXTRA_TEXT, "Attached you can find your vehicles list.")
+        println(Uri.fromFile(excelFile))
+        intent.putExtra(Intent.EXTRA_STREAM, fileUri)
+
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        /** to satisfy this resolveActivity warning we need to add <queries> to our AndroidManifest **/
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
     }
 
     override fun onResume() {

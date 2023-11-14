@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/mi_add_vehicle"
+        android:title="Add Vehicle"
+        android:icon="@drawable/ic_baseline_add_24"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/mi_vehicle_export_excel"
+        android:title="Export to excel"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/mi_send_excel_by_email"
+        android:title="Send Excel by email"
+        app:showAsAction="never" />
+</menu>
