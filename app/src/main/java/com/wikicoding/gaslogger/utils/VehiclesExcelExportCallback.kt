@@ -33,14 +33,11 @@ class VehiclesExcelExportCallback(private val context: Context,
     }
 
     private fun saveExcelToDirectory(context: Context): File {
-//        exportDir = context.getExternalFilesDir(null)!!
-        exportDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)!!
+        exportDir = context.getExternalFilesDir(null)!!
 
         if (!exportDir.exists()) {
             exportDir.mkdirs()
         }
-
-        println(exportDir)
 
         val file =
             File(exportDir, "VehiclesList_${System.currentTimeMillis()}.xls")

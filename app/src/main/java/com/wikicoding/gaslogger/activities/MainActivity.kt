@@ -135,7 +135,9 @@ class MainActivity : BaseActivity() {
     private fun handleSendByEmailClick() {
         exportVehiclesToExcel()
         val intent = Intent(Intent.ACTION_SEND)
-        /** specifying which type of content I'm sending **/
+        /** added a provider tag to AndroidManifest.xml and also a xml resource with the file_paths.xml **/
+        /** specifying which type of content I'm sending, for normal text should be text/plain
+         * since I'm also sending the attachment, application/octet-stream **/
         intent.type = "application/octet-stream"
         val fileUri = FileProvider.getUriForFile(this,
             "${BuildConfig.APPLICATION_ID}.provider", excelFile!!)
@@ -146,6 +148,7 @@ class MainActivity : BaseActivity() {
         println(Uri.fromFile(excelFile))
         intent.putExtra(Intent.EXTRA_STREAM, fileUri)
 
+        /** setting temporary permission to files dir **/
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
         /** to satisfy this resolveActivity warning we need to add <queries> to our AndroidManifest **/
