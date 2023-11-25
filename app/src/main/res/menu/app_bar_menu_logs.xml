@@ -11,4 +11,9 @@
         android:id="@+id/mi_export_excel"
         android:title="Export to excel"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/mi_send_excel_by_email"
+        android:title="Send Excel by email"
+        app:showAsAction="never" />
 </menu>

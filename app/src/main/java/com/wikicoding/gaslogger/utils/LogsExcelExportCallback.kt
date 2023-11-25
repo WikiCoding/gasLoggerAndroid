@@ -20,7 +20,7 @@ class LogsExcelExportCallback (private val context: Context,
     private lateinit var exportDir: File
     private lateinit var workbook: HSSFWorkbook
 
-    fun exportExcel() {
+    fun exportExcel(): File {
         /** creating workbook and sheet **/
         workbook = HSSFWorkbook()
         sheet = workbook.createSheet(WORKBOOK_NAME)
@@ -33,10 +33,10 @@ class LogsExcelExportCallback (private val context: Context,
         fillColumnsWithCurrentData()
 
         /** Saving the data to a file **/
-        saveExcelToDirectory(context)
+        return saveExcelToDirectory(context)
     }
 
-    private fun saveExcelToDirectory(context: Context) {
+    private fun saveExcelToDirectory(context: Context): File {
         exportDir = context.getExternalFilesDir(null)!!
 
         if (!exportDir.exists()) {
@@ -57,6 +57,8 @@ class LogsExcelExportCallback (private val context: Context,
             Toast.makeText(context, "There was an error: $e", Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
+
+        return file
     }
 
     private fun fillColumnsWithCurrentData() {

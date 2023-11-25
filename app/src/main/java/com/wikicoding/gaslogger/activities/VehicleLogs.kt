@@ -1,17 +1,20 @@
 package com.wikicoding.gaslogger.activities
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.wikicoding.explorelog.utils.SwipeToDeleteCallback
 import com.wikicoding.explorelog.utils.SwipeToEditCallback
+import com.wikicoding.gaslogger.BuildConfig
 import com.wikicoding.gaslogger.R
 import com.wikicoding.gaslogger.adapter.LogsAdapter
 import com.wikicoding.gaslogger.constants.Constants
@@ -21,7 +24,10 @@ import com.wikicoding.gaslogger.model.LogEntity
 import com.wikicoding.gaslogger.model.VehicleEntity
 import com.wikicoding.gaslogger.model.relations.VehicleWithLogs
 import com.wikicoding.gaslogger.utils.LogsExcelExportCallback
+import com.wikicoding.gaslogger.utils.SendByEmail
+import com.wikicoding.gaslogger.utils.VehiclesExcelExportCallback
 import kotlinx.coroutines.launch
+import java.io.File
 import kotlin.collections.ArrayList
 import kotlin.math.round
 
@@ -42,6 +48,7 @@ class VehicleLogs : BaseActivity() {
     private var fillUpCost = 0.0
     private var previousLogDate = ""
     private lateinit var logsExcelCallback: LogsExcelExportCallback
+    private lateinit var excelFile: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,9 +77,10 @@ class VehicleLogs : BaseActivity() {
                 return true
             }
             R.id.mi_add_log -> insertLogDialog()
-            R.id.mi_export_excel -> {
-                logsExcelCallback = LogsExcelExportCallback(this, logsList!!, currentVehicle!!)
-                logsExcelCallback.exportExcel()
+            R.id.mi_export_excel -> exportLogsToExcel()
+            R.id.mi_send_excel_by_email -> {
+                exportLogsToExcel()
+                SendByEmail.handleSendByEmailClick(this, excelFile, packageManager, currentVehicle)
             }
         }
         return true
@@ -431,6 +439,11 @@ class VehicleLogs : BaseActivity() {
 
         val deleteItemTouchHandler = ItemTouchHelper(deleteSwipeHandler)
         deleteItemTouchHandler.attachToRecyclerView(binding!!.rvLogs)
+    }
+
+    private fun exportLogsToExcel() {
+        logsExcelCallback = LogsExcelExportCallback(this, logsList!!, currentVehicle!!)
+        excelFile = logsExcelCallback.exportExcel()
     }
 
     override fun onDestroy() {

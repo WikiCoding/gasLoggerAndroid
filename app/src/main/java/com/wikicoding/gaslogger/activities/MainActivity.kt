@@ -20,6 +20,7 @@ import com.wikicoding.gaslogger.adapter.VehiclesAdapter
 import com.wikicoding.gaslogger.constants.Constants
 import com.wikicoding.gaslogger.databinding.ActivityMainBinding
 import com.wikicoding.gaslogger.model.VehicleEntity
+import com.wikicoding.gaslogger.utils.SendByEmail
 import com.wikicoding.gaslogger.utils.VehiclesExcelExportCallback
 import kotlinx.coroutines.launch
 import java.io.File
@@ -54,7 +55,10 @@ class MainActivity : BaseActivity() {
         when (item.itemId) {
             R.id.mi_add_vehicle -> handleAddVehicleClick()
             R.id.mi_vehicle_export_excel -> exportVehiclesToExcel()
-            R.id.mi_send_excel_by_email -> handleSendByEmailClick()
+            R.id.mi_send_excel_by_email -> {
+                exportVehiclesToExcel()
+                SendByEmail.handleSendByEmailClick(this, excelFile!!, packageManager, null)
+            }
         }
         return true
     }
@@ -130,31 +134,6 @@ class MainActivity : BaseActivity() {
     private fun exportVehiclesToExcel() {
         val exportVehiclesExcel = VehiclesExcelExportCallback(this@MainActivity, vehiclesList!!)
         excelFile = exportVehiclesExcel.exportExcel()
-    }
-
-    private fun handleSendByEmailClick() {
-        exportVehiclesToExcel()
-        val intent = Intent(Intent.ACTION_SEND)
-        /** added a provider tag to AndroidManifest.xml and also a xml resource with the file_paths.xml **/
-        /** specifying which type of content I'm sending, for normal text should be text/plain
-         * since I'm also sending the attachment, application/octet-stream **/
-        intent.type = "application/octet-stream"
-        val fileUri = FileProvider.getUriForFile(this,
-            "${BuildConfig.APPLICATION_ID}.provider", excelFile!!)
-        /** passing data to the intent **/
-        intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(""))
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Your vehicles list @gasLogger.")
-        intent.putExtra(Intent.EXTRA_TEXT, "Attached you can find your vehicles list.")
-        println(Uri.fromFile(excelFile))
-        intent.putExtra(Intent.EXTRA_STREAM, fileUri)
-
-        /** setting temporary permission to files dir **/
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-        /** to satisfy this resolveActivity warning we need to add <queries> to our AndroidManifest **/
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        }
     }
 
     override fun onResume() {
